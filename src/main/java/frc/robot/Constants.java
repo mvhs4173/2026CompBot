@@ -8,31 +8,50 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
 /**
- * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
- * constants. This class should not be used for any other purpose. All constants should be declared
+ * The Constants class provides a convenient place for teams to hold robot-wide
+ * numerical or boolean
+ * constants. This class should not be used for any other purpose. All constants
+ * should be declared
  * globally (i.e. public static). Do not put anything functional in this class.
  *
- * <p>It is advised to statically import this class (or one of its inner classes) wherever the
+ * <p>
+ * It is advised to statically import this class (or one of its inner classes)
+ * wherever the
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+
+    public static final double normalSpeed = 1; //Meters PS
+    public static final double rotationNormalSpeed = 1; //Radians PS
   }
 
   public static class DrivetrainConstants {
-  
-    public double trackWidth = Units.inchesToMeters(0);
+
+    public static final double translationLimit = 1; // for slewRateLimiters
+    public static final double rotationLimit = 1;
+
+    public static  final int pigeonID = 1;
+
+    public static final double trackWidth = Units.inchesToMeters(28);
+    public static final double wheelBase = Units.inchesToMeters(23);
+
+    public static final double maxSpeed = 5.08257664976; //MPS
+    public static final double maxRotationSpeed = 11.0448342483; // Radians PS
+
     public enum SwerveModules {
-      frontLeft(null, 10, 11, false), 
+      frontLeft(null, 10, 11, false),
       frontRight(null, 20, 21, false),
       backLeft(null, 30, 31, false),
       backRight(null, 40, 41, false);
+
       public Translation2d wheelPos;
       public int turnID;
       public int driveID;
       public boolean driveReversed;
       public double chassisAngularOffset;
+
       private SwerveModules(Translation2d wheelPos, int turnID, int driveID, boolean driveReversed) {
         this.wheelPos = wheelPos;
         this.turnID = turnID;
@@ -51,9 +70,9 @@ public final class Constants {
   }
 
   public static class AutoConstants {
-    
+
   }
-  
+
   public static class VisionConstants {
 
   }

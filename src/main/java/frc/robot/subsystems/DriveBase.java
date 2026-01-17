@@ -12,13 +12,14 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
+import frc.robot.Constants.OperatorConstants;
 
 public class DriveBase extends SubsystemBase {
   SwerveDriveKinematics swerveDriveKinematics;
   MAXSwerveModule[] modules = new MAXSwerveModule[4];
-  private final Pigeon2 pigeon = new Pigeon2(1, "rio"); // Pigeon is on roboRIO CAN Bus with device ID 1
-  private SlewRateLimiter translationLimiter = new SlewRateLimiter(1); //will be constants
-  private SlewRateLimiter rotationLimiter = new SlewRateLimiter(1);
+  private final Pigeon2 pigeon = new Pigeon2(DrivetrainConstants.pigeonID, "rio"); // Pigeon is on roboRIO CAN Bus with device ID 1
+  private SlewRateLimiter translationLimiter = new SlewRateLimiter(DrivetrainConstants.translationLimit); //will be constants
+  private SlewRateLimiter rotationLimiter = new SlewRateLimiter(DrivetrainConstants.rotationLimit);
 
 
   /** Creates a new DriveBase. */
@@ -37,15 +38,17 @@ public class DriveBase extends SubsystemBase {
     forward = Math.pow(forward, 3);
     side = Math.pow(side, 3);
     rotate = Math.pow(rotate, 3);
+
+    convertSpeeds(forward, side, rotate, fieldOrient, boost);
   }
 
   public void convertSpeeds(double forward, double side, double rotate, boolean fieldOrient, boolean boost) {
-    double forwardVelocity = forward; //convert % speed to MPS and apply boost
-    double sideVelocity = side; //same ^
-    double rotateVelocity = rotate; // same^
+    double forwardVelocity = boost ? forward * DrivetrainConstants.maxSpeed : forward * OperatorConstants.normalSpeed; //convert % speed to MPS and apply boost
+    double sideVelocity = boost ? side *  DrivetrainConstants.maxSpeed : side * OperatorConstants.normalSpeed; //same ^
+    double rotateVelocity = boost ? rotate : rotate; // same^
     ChassisSpeeds speeds = new ChassisSpeeds(forwardVelocity, sideVelocity, rotateVelocity);
     if(fieldOrient){
-      speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, null); //function to get angle from pig
+      speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, null); //needs function to get angle from pig
     }
     double movementAngle = Math.atan2(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
     double linearVelocity = Math.sqrt((Math.pow(speeds.vxMetersPerSecond, 2) + Math.pow(speeds.vyMetersPerSecond, 2))); //pythagorean theorem
@@ -59,8 +62,10 @@ public class DriveBase extends SubsystemBase {
 
   public void applySpeeds(ChassisSpeeds speeds) {
     SwerveModuleState[] states = swerveDriveKinematics.toWheelSpeeds(speeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(states, DrivetrainConstants.maxSpeed);
     for(int i = 0; i < 4; i++){
       //apply speeds 2 each wheel
+      modules[i].setDesiredState(states[i]);
     }
   }
 
