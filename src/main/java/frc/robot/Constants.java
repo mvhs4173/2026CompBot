@@ -6,6 +6,10 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.Voltage;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -23,21 +27,25 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
 
-    public static final double normalSpeed = 1; //Meters PS
-    public static final double rotationNormalSpeed = 1; //Radians PS
+    public static final double normalSpeed = 1; // Meters PS
+    public static final double rotationNormalSpeed = 1; // Radians PS
   }
 
   public static class DrivetrainConstants {
 
+    public static final Velocity<VoltageUnit> kSysIdRampRate = null;
+    public static final Voltage kStepVoltage = null;
+    public static final Time kTimeout = null;
+
     public static final double translationLimit = 1; // for slewRateLimiters
     public static final double rotationLimit = 1;
 
-    public static  final int pigeonID = 1;
+    public static final int pigeonID = 1;
 
     public static final double trackWidth = Units.inchesToMeters(28);
     public static final double wheelBase = Units.inchesToMeters(23);
 
-    public static final double maxSpeed = 5.08257664976; //MPS
+    public static final double maxSpeed = 5.08257664976; // MPS
     public static final double maxRotationSpeed = 11.0448342483; // Radians PS
 
     public enum SwerveModules {
@@ -51,6 +59,8 @@ public final class Constants {
       public int driveID;
       public boolean driveReversed;
       public double chassisAngularOffset;
+
+      public double moduleAngularOffset;
 
       private SwerveModules(Translation2d wheelPos, int turnID, int driveID, boolean driveReversed) {
         this.wheelPos = wheelPos;
