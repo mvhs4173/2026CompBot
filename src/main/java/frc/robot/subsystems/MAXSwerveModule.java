@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -20,16 +21,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import frc.robot.Configs;
 import frc.robot.Constants.DrivetrainConstants;
 
 public class MAXSwerveModule {
   private final TalonFX m_drivingTalon;
   private final SparkMax m_turningSpark;
 
-  //private final RelativeEncoder m_drivingEncoder;
+  // private final RelativeEncoder m_drivingEncoder;
   private final AbsoluteEncoder m_turningEncoder;
 
-  //private final SparkClosedLoopController m_drivingClosedLoopController;
+  // private final SparkClosedLoopController m_drivingClosedLoopController;
   private final SparkClosedLoopController m_turningClosedLoopController;
 
   private double m_chassisAngularOffset = 0;
@@ -45,28 +47,51 @@ public class MAXSwerveModule {
     m_drivingTalon = new TalonFX(module.driveID);
     m_turningSpark = new SparkMax(module.turnID, MotorType.kBrushless);
 
-    
     m_turningEncoder = m_turningSpark.getAbsoluteEncoder();
 
-    //m_drivingClosedLoopController = m_drivingTalon.get();
+    // m_drivingClosedLoopController = m_drivingTalon.get();
     m_turningClosedLoopController = m_turningSpark.getClosedLoopController();
+
+    // in init function
+    var talonFXConfigs = new TalonFXConfiguration();
+
+    // set slot 0 gains
+    var slot0Configs = talonFXConfigs.Slot0;
+    slot0Configs.kS = 0.25; // Add 0.25 V output to overcome static friction
+    slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
+    slot0Configs.kA = 0.01; // An acceleration of 1 rps/s requires 0.01 V output
+    slot0Configs.kP = 4.8; // A position error of 2.5 rotations results in 12 V output
+    slot0Configs.kI = 0; // no output for integrated error
+    slot0Configs.kD = 0.1; // A velocity error of 1 rps results in 0.1 V output
+
+    // set Motion Magic settings
+    var motionMagicConfigs = talonFXConfigs.MotionMagic;
+    motionMagicConfigs.MotionMagicCruiseVelocity = 80; // Target cruise velocity of 80 rps
+    motionMagicConfigs.MotionMagicAcceleration = 160; // Target acceleration of 160 rps/s (0.5 seconds)
+    motionMagicConfigs.MotionMagicJerk = 1600; // Target jerk of 1600 rps/s/s (0.1 seconds)
+
+    m_drivingTalon.getConfigurator().apply(talonFXConfigs);
 
     // Apply the respective configurations to the SPARKS. Reset parameters before
     // applying the configuration to bring the SPARK to a known good state. Persist
     // the settings to the SPARK to avoid losing them on a power cycle.
-    // m_drivingSpark.configure(Configs.MAXSwerveModule.drivingConfig, ResetMode.kResetSafeParameters,
-    //     PersistMode.kPersistParameters);
-    // m_turningSpark.configure(Configs.MAXSwerveModule.turningConfig, ResetMode.kResetSafeParameters,
-    //     PersistMode.kPersistParameters);
+    // m_drivingSpark.configure(Configs.MAXSwerveModule.drivingConfig,
+    // ResetMode.kResetSafeParameters,
+    // PersistMode.kPersistParameters);
+    m_turningSpark.configure(Configs.MAXSwerveModule.turningConfig,
+        ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
 
     m_chassisAngularOffset = module.chassisAngularOffset;
     m_desiredState.angle = new Rotation2d(m_turningEncoder.getPosition());
     m_drivingTalon.setPosition(0.0);
   }
 
-  /*public double getVoltage() {
-    return m_
-  }*/
+  /*
+   * public double getVoltage() {
+   * return m_
+   * }
+   */
 
   /**
    * Returns the current state of the module.
@@ -115,7 +140,8 @@ public class MAXSwerveModule {
   }
 
   public void setSwerveAngle(Rotation2d angle) {
-    m_turningClosedLoopController.setSetpoint(angle.plus(Rotation2d.fromRadians(m_chassisAngularOffset)).getRadians(), ControlType.kPosition);
+    m_turningClosedLoopController.setSetpoint(angle.plus(Rotation2d.fromRadians(m_chassisAngularOffset)).getRadians(),
+        ControlType.kPosition);
   }
 
   public void setDriveVoltage(double volts) {
@@ -127,11 +153,18 @@ public class MAXSwerveModule {
   }
 
   public double getDistanceMeters() {
-    return Units.inchesToMeters(m_drivingTalon.getRotorPosition().getValueAsDouble() / 4.71 * 3 * Math.PI); //3 inch wheel diameter, 4.71 : 1 gear ratio
+    return Units.inchesToMeters(m_drivingTalon.getRotorPosition().getValueAsDouble() / 4.71 * 3 * Math.PI); // 3 inch
+                                                                                                            // wheel
+                                                                                                            // diameter,
+                                                                                                            // 4.71 : 1
+                                                                                                            // gear
+                                                                                                            // ratio
   }
 
   public double getSpeedMetersPerSecond() {
-    return Units.inchesToMeters(m_drivingTalon.getRotorVelocity().getValueAsDouble() / 4.71 * 3 * Math.PI); //4.71 : 1 gear ratio
+    return Units.inchesToMeters(m_drivingTalon.getRotorVelocity().getValueAsDouble() / 4.71 * 3 * Math.PI); // 4.71 : 1
+                                                                                                            // gear
+                                                                                                            // ratio
   }
 
   /** Zeroes all the SwerveModule encoders. */
