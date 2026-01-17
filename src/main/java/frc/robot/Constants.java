@@ -49,10 +49,10 @@ public final class Constants {
     public static final double maxRotationSpeed = 11.0448342483; // Radians PS
 
     public enum SwerveModules {
-      frontLeft(null, 10, 11, false),
-      frontRight(null, 20, 21, false),
-      backLeft(null, 30, 31, false),
-      backRight(null, 40, 41, false);
+      frontLeft(new Translation2d(wheelBase / 2, trackWidth / 2), 10, 11, false),
+      frontRight(new Translation2d(wheelBase / 2, -trackWidth / 2), 20, 21, false),
+      backLeft(new Translation2d(-wheelBase / 2, trackWidth / 2), 30, 31, false),
+      backRight(new Translation2d(-wheelBase / 2, -trackWidth / 2), 40, 41, false);
 
       public Translation2d wheelPos;
       public int turnID;
