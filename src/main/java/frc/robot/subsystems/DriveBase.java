@@ -30,23 +30,24 @@ import frc.robot.Constants.OperatorConstants;
 public class DriveBase extends SubsystemBase {
   SwerveDriveKinematics swerveDriveKinematics;
   MAXSwerveModule[] modules = new MAXSwerveModule[4];
-  private final Pigeon2 pigeon = new Pigeon2(DrivetrainConstants.pigeonID, "rio"); // Pigeon is on roboRIO CAN Bus with device ID 1
-  private SlewRateLimiter translationLimiter = new SlewRateLimiter(DrivetrainConstants.translationLimit); //will be constants
+  private final Pigeon2 pigeon = new Pigeon2(DrivetrainConstants.pigeonID, "rio"); // Pigeon is on roboRIO CAN Bus with
+                                                                                   // device ID 1
+  private SlewRateLimiter translationLimiter = new SlewRateLimiter(DrivetrainConstants.translationLimit); // will be
+                                                                                                          // constants
   private SlewRateLimiter rotationLimiter = new SlewRateLimiter(DrivetrainConstants.rotationLimit);
-  
+
   private Config m_sysIdConfig;
-        private Mechanism m_sysIdMechanism;
-        private SysIdRoutine m_sysIdRoutine;
-        private MecanumDriveOdometry m_odometry;
+  private Mechanism m_sysIdMechanism;
+  private SysIdRoutine m_sysIdRoutine;
+  private MecanumDriveOdometry m_odometry;
 
-        private final MutVoltage m_appliedVoltage = Volts.mutable(0);
-        private final MutDistance m_distance = Meters.mutable(0);
-        private final MutLinearVelocity m_velocity = MetersPerSecond.mutable(0);
-
+  private final MutVoltage m_appliedVoltage = Volts.mutable(0);
+  private final MutDistance m_distance = Meters.mutable(0);
+  private final MutLinearVelocity m_velocity = MetersPerSecond.mutable(0);
 
   /** Creates a new DriveBase. */
   public DriveBase() {
-    for (int i = 0; i < 4; i++){
+    for (int i = 0; i < 4; i++) {
       modules[i] = new MAXSwerveModule(DrivetrainConstants.SwerveModules.values()[i]);
     }
     swerveDriveKinematics = new SwerveDriveKinematics(
@@ -54,68 +55,70 @@ public class DriveBase extends SubsystemBase {
         DrivetrainConstants.SwerveModules.frontRight.wheelPos,
         DrivetrainConstants.SwerveModules.backLeft.wheelPos,
         DrivetrainConstants.SwerveModules.backRight.wheelPos);
-    
-         m_sysIdConfig = new Config(DrivetrainConstants.kSysIdRampRate, DrivetrainConstants.kStepVoltage,
-                                DrivetrainConstants.kTimeout);
 
-                 m_sysIdMechanism = new Mechanism(this::applyVolts, log -> {
-                        log.motor("drive-front-left")
-                                        .voltage(
-                                                        m_appliedVoltage.mut_replace(
-                                                                        modules[0].getVoltage(), Volts))
-                                        .linearPosition(m_distance.mut_replace(modules[0].getDistanceMeters(),
-                                                        Meters))
-                                        .linearVelocity(
-                                                        m_velocity.mut_replace(
-                                                                        modules[0].getSpeedMetersPerSecond(),
-                                                                        MetersPerSecond));
-                        log.motor("drive-front-right")
-                                        .voltage(
-                                                        m_appliedVoltage.mut_replace(
-                                                                        modules[1].getVoltage(), Volts))
-                                        .linearPosition(m_distance.mut_replace(modules[1].getDistanceMeters(),
-                                                        Meters))
-                                        .linearVelocity(
-                                                        m_velocity.mut_replace(
-                                                                        modules[1].getSpeedMetersPerSecond(),
-                                                                        MetersPerSecond));
-                        log.motor("drive-back-left")
-                                        .voltage(
-                                                        m_appliedVoltage.mut_replace(
-                                                                        modules[2].getVoltage(), Volts))
-                                        .linearPosition(m_distance.mut_replace(modules[2].getDistanceMeters(),
-                                                        Meters))
-                                        .linearVelocity(
-                                                        m_velocity.mut_replace(
-                                                                        modules[2].getSpeedMetersPerSecond(),
-                                                                        MetersPerSecond));
-                        log.motor("drive-back-right")
-                                        .voltage(
-                                                        m_appliedVoltage.mut_replace(
-                                                                        modules[3].getVoltage(), Volts))
-                                        .linearPosition(m_distance.mut_replace(modules[3].getDistanceMeters(),
-                                                        Meters))
-                                        .linearVelocity(
-                                                        m_velocity.mut_replace(
-                                                                        modules[3].getSpeedMetersPerSecond(),
-                                                                        MetersPerSecond));
-                }, this, "sysIdRoutine");
+    pigeon.reset();
 
-                m_sysIdRoutine = new SysIdRoutine(m_sysIdConfig, m_sysIdMechanism);
+    m_sysIdConfig = new Config(DrivetrainConstants.kSysIdRampRate, DrivetrainConstants.kStepVoltage,
+        DrivetrainConstants.kTimeout);
+
+    m_sysIdMechanism = new Mechanism(this::applyVolts, log -> {
+      log.motor("drive-front-left")
+          .voltage(
+              m_appliedVoltage.mut_replace(
+                  modules[0].getVoltage(), Volts))
+          .linearPosition(m_distance.mut_replace(modules[0].getDistanceMeters(),
+              Meters))
+          .linearVelocity(
+              m_velocity.mut_replace(
+                  modules[0].getSpeedMetersPerSecond(),
+                  MetersPerSecond));
+      log.motor("drive-front-right")
+          .voltage(
+              m_appliedVoltage.mut_replace(
+                  modules[1].getVoltage(), Volts))
+          .linearPosition(m_distance.mut_replace(modules[1].getDistanceMeters(),
+              Meters))
+          .linearVelocity(
+              m_velocity.mut_replace(
+                  modules[1].getSpeedMetersPerSecond(),
+                  MetersPerSecond));
+      log.motor("drive-back-left")
+          .voltage(
+              m_appliedVoltage.mut_replace(
+                  modules[2].getVoltage(), Volts))
+          .linearPosition(m_distance.mut_replace(modules[2].getDistanceMeters(),
+              Meters))
+          .linearVelocity(
+              m_velocity.mut_replace(
+                  modules[2].getSpeedMetersPerSecond(),
+                  MetersPerSecond));
+      log.motor("drive-back-right")
+          .voltage(
+              m_appliedVoltage.mut_replace(
+                  modules[3].getVoltage(), Volts))
+          .linearPosition(m_distance.mut_replace(modules[3].getDistanceMeters(),
+              Meters))
+          .linearVelocity(
+              m_velocity.mut_replace(
+                  modules[3].getSpeedMetersPerSecond(),
+                  MetersPerSecond));
+    }, this, "sysIdRoutine");
+
+    m_sysIdRoutine = new SysIdRoutine(m_sysIdConfig, m_sysIdMechanism);
   }
 
   public void applyVolts(Voltage v) {
-    for(int i = 0; i < 4; i++){
+    for (int i = 0; i < 4; i++) {
       modules[i].setSwerveAngle(new Rotation2d());
       modules[i].setDriveVoltage(v.in(Volts));
     }
   }
 
-  public void resetGyro(){
+  public void resetGyro() {
     pigeon.reset();
   }
 
-  public Rotation2d getAngle(){
+  public Rotation2d getAngle() {
     return pigeon.getRotation2d();
   }
 
@@ -127,16 +130,24 @@ public class DriveBase extends SubsystemBase {
     convertSpeeds(forward, side, rotate, fieldOrient, boost);
   }
 
-  public void convertSpeeds(double forward, double side, double rotate, boolean fieldOrient, boolean boost) {
-    double forwardVelocity = boost ? forward * DrivetrainConstants.maxSpeed : forward * OperatorConstants.normalSpeed; //convert % speed to MPS and apply boost
-    double sideVelocity = boost ? side *  DrivetrainConstants.maxSpeed : side * OperatorConstants.normalSpeed; //same ^
+  private void convertSpeeds(double forward, double side, double rotate, boolean fieldOrient, boolean boost) {
+    double forwardVelocity = boost ? forward * DrivetrainConstants.maxSpeed : forward * OperatorConstants.normalSpeed; // convert
+                                                                                                                       // %
+                                                                                                                       // speed
+                                                                                                                       // to
+                                                                                                                       // MPS
+                                                                                                                       // and
+                                                                                                                       // apply
+                                                                                                                       // boost
+    double sideVelocity = boost ? side * DrivetrainConstants.maxSpeed : side * OperatorConstants.normalSpeed; // same ^
     double rotateVelocity = boost ? rotate : rotate; // same^
     ChassisSpeeds speeds = new ChassisSpeeds(forwardVelocity, sideVelocity, rotateVelocity);
-    if(fieldOrient){
-      speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getAngle()); //needs function to get angle from pig
+    if (fieldOrient) {
+      speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getAngle()); // needs function to get angle from pig
     }
     double movementAngle = Math.atan2(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
-    double linearVelocity = Math.sqrt((Math.pow(speeds.vxMetersPerSecond, 2) + Math.pow(speeds.vyMetersPerSecond, 2))); //pythagorean theorem
+    double linearVelocity = Math.sqrt((Math.pow(speeds.vxMetersPerSecond, 2) + Math.pow(speeds.vyMetersPerSecond, 2))); // pythagorean
+                                                                                                                        // theorem
     linearVelocity = translationLimiter.calculate(linearVelocity);
     rotateVelocity = rotationLimiter.calculate(rotateVelocity);
     forwardVelocity = Math.sin(movementAngle) * linearVelocity;
@@ -148,8 +159,8 @@ public class DriveBase extends SubsystemBase {
   public void applySpeeds(ChassisSpeeds speeds) {
     SwerveModuleState[] states = swerveDriveKinematics.toWheelSpeeds(speeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(states, DrivetrainConstants.maxSpeed);
-    for(int i = 0; i < 4; i++){
-      //apply speeds 2 each wheel
+    for (int i = 0; i < 4; i++) {
+      // apply speeds 2 each wheel
       modules[i].setDesiredState(states[i]);
     }
   }

@@ -49,7 +49,7 @@ public class MAXSwerveModule {
 
     m_turningEncoder = m_turningSpark.getAbsoluteEncoder();
 
-    // m_drivingClosedLoopController = m_drivingTalon.get();
+    //m_drivingClosedLoopController = m_drivingTalon.get();
     m_turningClosedLoopController = m_turningSpark.getClosedLoopController();
 
     // in init function
@@ -75,9 +75,7 @@ public class MAXSwerveModule {
     // Apply the respective configurations to the SPARKS. Reset parameters before
     // applying the configuration to bring the SPARK to a known good state. Persist
     // the settings to the SPARK to avoid losing them on a power cycle.
-    // m_drivingSpark.configure(Configs.MAXSwerveModule.drivingConfig,
-    // ResetMode.kResetSafeParameters,
-    // PersistMode.kPersistParameters);
+     //m_drivingTalon
     m_turningSpark.configure(Configs.MAXSwerveModule.turningConfig,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);

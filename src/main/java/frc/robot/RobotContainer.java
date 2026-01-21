@@ -43,7 +43,7 @@ public class RobotContainer {
           m_driverController.getLeftY(),
           m_driverController.getRightY(),
           m_driverController.leftBumper().getAsBoolean(),
-          m_driverController.rightTrigger().getAsBoolean());
+          !m_driverController.rightTrigger().getAsBoolean());
     }, m_driveBase));
 
     // Configure the trigger bindings
