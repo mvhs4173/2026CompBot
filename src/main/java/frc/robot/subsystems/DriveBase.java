@@ -20,6 +20,7 @@ import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
@@ -155,7 +156,7 @@ public class DriveBase extends SubsystemBase {
     speeds = new ChassisSpeeds(forwardVelocity, sideVelocity, rotateVelocity);
     applySpeeds(speeds);
   }
-
+  //TODO: somewhere between userdrive and apply speeds the xyz's are mixed up
   public void applySpeeds(ChassisSpeeds speeds) {
     SwerveModuleState[] states = swerveDriveKinematics.toWheelSpeeds(speeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(states, DrivetrainConstants.maxSpeed);
@@ -168,5 +169,9 @@ public class DriveBase extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Front Left Angle Degrees", modules[0].getState().angle.getDegrees());
+    SmartDashboard.putNumber("Front Right Angle Degrees", modules[1].getState().angle.getDegrees());
+    SmartDashboard.putNumber("Back Left Angle Degrees", modules[2].getState().angle.getDegrees());
+    SmartDashboard.putNumber("Back Right Angle Degrees", modules[3].getState().angle.getDegrees());
   }
 }

@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.AbsoluteEncoder;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Configs;
+import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
 
 public class MAXSwerveModule {
@@ -49,7 +51,7 @@ public class MAXSwerveModule {
 
     m_turningEncoder = m_turningSpark.getAbsoluteEncoder();
 
-    //m_drivingClosedLoopController = m_drivingTalon.get();
+    // m_drivingClosedLoopController = m_drivingTalon.get();
     m_turningClosedLoopController = m_turningSpark.getClosedLoopController();
 
     // in init function
@@ -57,30 +59,24 @@ public class MAXSwerveModule {
 
     // set slot 0 gains
     var slot0Configs = talonFXConfigs.Slot0;
-    slot0Configs.kS = 0.25; // Add 0.25 V output to overcome static friction
-    slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-    slot0Configs.kA = 0.01; // An acceleration of 1 rps/s requires 0.01 V output
-    slot0Configs.kP = 4.8; // A position error of 2.5 rotations results in 12 V output
-    slot0Configs.kI = 0; // no output for integrated error
-    slot0Configs.kD = 0.1; // A velocity error of 1 rps results in 0.1 V output
+    slot0Configs.kS = 0.0;// 0.25 // Add 0.25 V output to overcome static friction
+    slot0Configs.kV = 0.0;// 0.12 // A velocity target of 1 rps results in 0.12 V output
+    slot0Configs.kA = 0.0;// 0.01 // An acceleration of 1 rps/s requires 0.01 V output
+    slot0Configs.kP = 48.0;// 4.8 // A position error of 2.5 rotations results in 12 V output
+    slot0Configs.kI = 0.0;// 0 // no output for integrated error
+    slot0Configs.kD = 0.0;// 0.1 // A velocity error of 1 rps results in 0.1 V output
 
-    // set Motion Magic settings
-    var motionMagicConfigs = talonFXConfigs.MotionMagic;
-    motionMagicConfigs.MotionMagicCruiseVelocity = 80; // Target cruise velocity of 80 rps
-    motionMagicConfigs.MotionMagicAcceleration = 160; // Target acceleration of 160 rps/s (0.5 seconds)
-    motionMagicConfigs.MotionMagicJerk = 1600; // Target jerk of 1600 rps/s/s (0.1 seconds)
-
-    m_drivingTalon.getConfigurator().apply(talonFXConfigs);
+    m_drivingTalon.getConfigurator().apply(slot0Configs);
 
     // Apply the respective configurations to the SPARKS. Reset parameters before
     // applying the configuration to bring the SPARK to a known good state. Persist
     // the settings to the SPARK to avoid losing them on a power cycle.
-     //m_drivingTalon
+    // m_drivingTalon
     m_turningSpark.configure(Configs.MAXSwerveModule.turningConfig,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
 
-    m_chassisAngularOffset = module.chassisAngularOffset;
+    m_chassisAngularOffset = 0;
     m_desiredState.angle = new Rotation2d(m_turningEncoder.getPosition());
     m_drivingTalon.setPosition(0.0);
   }
@@ -131,7 +127,13 @@ public class MAXSwerveModule {
     correctedDesiredState.optimize(new Rotation2d(m_turningEncoder.getPosition()));
 
     // Command driving and turning SPARKS towards their respective setpoints.
-    m_drivingTalon.setControl(new MotionMagicVelocityVoltage(correctedDesiredState.speedMetersPerSecond));
+    PositionVoltage driveOutput = new PositionVoltage(0);
+    driveOutput.Position = 0;
+    driveOutput.Velocity = correctedDesiredState.speedMetersPerSecond;
+
+    // m_drivingTalon.setControl(driveOutput);
+    m_drivingTalon.setControl(new VoltageOut((correctedDesiredState.speedMetersPerSecond /
+        Constants.DrivetrainConstants.maxSpeed) * 12));// % speed * volts
     m_turningClosedLoopController.setSetpoint(correctedDesiredState.angle.getRadians(), ControlType.kPosition);
 
     m_desiredState = desiredState;

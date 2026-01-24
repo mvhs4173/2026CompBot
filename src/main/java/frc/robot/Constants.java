@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
@@ -49,10 +50,12 @@ public final class Constants {
     public static final double maxRotationSpeed = 11.0448342483; // Radians PS
 
     public enum SwerveModules {
-      frontLeft(new Translation2d(wheelBase / 2, trackWidth / 2), 10, 11, false),
-      frontRight(new Translation2d(wheelBase / 2, -trackWidth / 2), 20, 21, false),
-      backLeft(new Translation2d(-wheelBase / 2, trackWidth / 2), 30, 31, false),
-      backRight(new Translation2d(-wheelBase / 2, -trackWidth / 2), 40, 41, false);
+      frontLeft(new Translation2d(wheelBase / 2, trackWidth / 2), 10, 11, false, new Rotation2d(5.459)),
+      frontRight(new Translation2d(wheelBase / 2, -trackWidth / 2), 20, 21, false, new Rotation2d(1.757)),
+      backLeft(new Translation2d(-wheelBase / 2, trackWidth / 2), 30, 31, false, new Rotation2d(4.001)),
+      backRight(new Translation2d(-wheelBase / 2, -trackWidth / 2), 40, 41, false, new Rotation2d(0.122));
+
+      public Rotation2d offsetAngle;
 
       public Translation2d wheelPos;
       public int turnID;
@@ -62,16 +65,26 @@ public final class Constants {
 
       public double moduleAngularOffset;
 
-      private SwerveModules(Translation2d wheelPos, int turnID, int driveID, boolean driveReversed) {
+      private SwerveModules(Translation2d wheelPos, int turnID, int driveID, boolean driveReversed, Rotation2d offsetAngle) {
         this.wheelPos = wheelPos;
         this.turnID = turnID;
         this.driveID = driveID;
         this.driveReversed = driveReversed;
+        this.offsetAngle = offsetAngle;
       }
     }
   }
 
   public static class IntakeConstants {
+    public static final int kIntakeDeploymentID = 50;
+    public static final int kIntakeRunningID = 51;
+
+    public static final int kDeployedLimitSwitchPort = 0; //DIO ports for limit switches
+    public static final int kRetractedLimitSwitchPort = 1;
+
+    public static final double kDeploymentSpeed = 0.2;
+
+    public static final boolean kDeploymentInverted = false;
 
   }
 

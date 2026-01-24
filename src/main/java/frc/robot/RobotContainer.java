@@ -41,7 +41,7 @@ public class RobotContainer {
       m_driveBase.userDrive(
           m_driverController.getLeftX(),
           m_driverController.getLeftY(),
-          m_driverController.getRightY(),
+          m_driverController.getRightX(),
           m_driverController.leftBumper().getAsBoolean(),
           !m_driverController.rightTrigger().getAsBoolean());
     }, m_driveBase));
