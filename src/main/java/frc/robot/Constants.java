@@ -28,18 +28,22 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
 
-    public static final double normalSpeed = 1; // Meters PS
-    public static final double rotationNormalSpeed = 1; // Radians PS
+    public static final double translationLimit = 2.5; // for slewRateLimiters
+    public static final double rotationLimit = 4;
+
+    public static final double normalSpeed = 2; // Meters PS
+    public static final double rotationNormalSpeed = 2.5; // Radians PS
   }
 
   public static class DrivetrainConstants {
+
+    public static final boolean kUsePigeon = false;
 
     public static final Velocity<VoltageUnit> kSysIdRampRate = null;
     public static final Voltage kStepVoltage = null;
     public static final Time kTimeout = null;
 
-    public static final double translationLimit = 1; // for slewRateLimiters
-    public static final double rotationLimit = 1;
+
 
     public static final int pigeonID = 1;
 
@@ -47,12 +51,12 @@ public final class Constants {
     public static final double wheelBase = Units.inchesToMeters(23);
 
     public static final double maxSpeed = 5.08257664976; // MPS
-    public static final double maxRotationSpeed = 11.0448342483; // Radians PS
+    public static final double maxRotationSpeed = 11.0448342483; // Radians PS //11.0448342483
 
     public enum SwerveModules {
-      frontLeft(new Translation2d(wheelBase / 2, trackWidth / 2), 10, 11, false, new Rotation2d(5.459)),
+      frontLeft(new Translation2d(wheelBase / 2, trackWidth / 2), 10, 11, true, new Rotation2d(5.459)),
       frontRight(new Translation2d(wheelBase / 2, -trackWidth / 2), 20, 21, false, new Rotation2d(1.757)),
-      backLeft(new Translation2d(-wheelBase / 2, trackWidth / 2), 30, 31, false, new Rotation2d(4.001)),
+      backLeft(new Translation2d(-wheelBase / 2, trackWidth / 2), 30, 31, true, new Rotation2d(4.001)),
       backRight(new Translation2d(-wheelBase / 2, -trackWidth / 2), 40, 41, false, new Rotation2d(0.122));
 
       public Rotation2d offsetAngle;
@@ -65,7 +69,8 @@ public final class Constants {
 
       public double moduleAngularOffset;
 
-      private SwerveModules(Translation2d wheelPos, int turnID, int driveID, boolean driveReversed, Rotation2d offsetAngle) {
+      private SwerveModules(Translation2d wheelPos, int turnID, int driveID, boolean driveReversed,
+          Rotation2d offsetAngle) {
         this.wheelPos = wheelPos;
         this.turnID = turnID;
         this.driveID = driveID;
@@ -79,7 +84,7 @@ public final class Constants {
     public static final int kIntakeDeploymentID = 50;
     public static final int kIntakeRunningID = 51;
 
-    public static final int kDeployedLimitSwitchPort = 0; //DIO ports for limit switches
+    public static final int kDeployedLimitSwitchPort = 0; // DIO ports for limit switches
     public static final int kRetractedLimitSwitchPort = 1;
 
     public static final double kDeploymentSpeed = 0.2;

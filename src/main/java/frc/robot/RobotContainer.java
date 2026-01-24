@@ -39,11 +39,11 @@ public class RobotContainer {
   public RobotContainer() {
     m_driveBase.setDefaultCommand(new RunCommand(() -> {
       m_driveBase.userDrive(
-          m_driverController.getLeftX(),
-          m_driverController.getLeftY(),
-          m_driverController.getRightX(),
-          m_driverController.leftBumper().getAsBoolean(),
-          !m_driverController.rightTrigger().getAsBoolean());
+          -m_driverController.getLeftY(),
+          -m_driverController.getLeftX(),
+          -m_driverController.getRightX(),
+          !m_driverController.leftBumper().getAsBoolean(),
+          m_driverController.rightTrigger().getAsBoolean());
     }, m_driveBase));
 
     // Configure the trigger bindings

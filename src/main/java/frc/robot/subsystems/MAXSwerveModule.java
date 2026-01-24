@@ -36,6 +36,8 @@ public class MAXSwerveModule {
   // private final SparkClosedLoopController m_drivingClosedLoopController;
   private final SparkClosedLoopController m_turningClosedLoopController;
 
+  private boolean m_driveInverted;
+
   private double m_chassisAngularOffset = 0;
   private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
 
@@ -54,9 +56,11 @@ public class MAXSwerveModule {
     // m_drivingClosedLoopController = m_drivingTalon.get();
     m_turningClosedLoopController = m_turningSpark.getClosedLoopController();
 
+    m_driveInverted = module.driveReversed;
+
     // in init function
     var talonFXConfigs = new TalonFXConfiguration();
-
+    
     // set slot 0 gains
     var slot0Configs = talonFXConfigs.Slot0;
     slot0Configs.kS = 0.0;// 0.25 // Add 0.25 V output to overcome static friction
@@ -66,8 +70,10 @@ public class MAXSwerveModule {
     slot0Configs.kI = 0.0;// 0 // no output for integrated error
     slot0Configs.kD = 0.0;// 0.1 // A velocity error of 1 rps results in 0.1 V output
 
-    m_drivingTalon.getConfigurator().apply(slot0Configs);
+    
+    m_drivingTalon.getConfigurator().apply(talonFXConfigs);
 
+    
     // Apply the respective configurations to the SPARKS. Reset parameters before
     // applying the configuration to bring the SPARK to a known good state. Persist
     // the settings to the SPARK to avoid losing them on a power cycle.
@@ -132,8 +138,10 @@ public class MAXSwerveModule {
     driveOutput.Velocity = correctedDesiredState.speedMetersPerSecond;
 
     // m_drivingTalon.setControl(driveOutput);
+
     m_drivingTalon.setControl(new VoltageOut((correctedDesiredState.speedMetersPerSecond /
-        Constants.DrivetrainConstants.maxSpeed) * 12));// % speed * volts
+        Constants.DrivetrainConstants.maxSpeed) * 
+        (m_driveInverted ? -12 : 12)));// % speed * volts
     m_turningClosedLoopController.setSetpoint(correctedDesiredState.angle.getRadians(), ControlType.kPosition);
 
     m_desiredState = desiredState;
