@@ -19,6 +19,8 @@ public class Shooter extends SubsystemBase {
 
   }
 
+  //Might make code for adjustable hood
+
   public void shoot() {
     m_ShooterMotor.setVoltage(Constants.ShooterConstants.kVoltage);
   }
