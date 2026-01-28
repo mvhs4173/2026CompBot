@@ -34,12 +34,13 @@ import frc.robot.Constants.OperatorConstants;
 public class DriveBase extends SubsystemBase {
   SwerveDriveKinematics m_swerveDriveKinematics;
   MAXSwerveModule[] m_modules = new MAXSwerveModule[4];
-  private final Pigeon2 m_pigeon = new Pigeon2(DrivetrainConstants.pigeonID, "rio"); // Pigeon is on roboRIO CAN Bus with
-                                                                                   // device ID 1
+  private final Pigeon2 m_pigeon = new Pigeon2(DrivetrainConstants.pigeonID, "rio");
+  // Pigeon is on roboRIO CAN Bus with device ID 1
+
   private final AHRS m_navX = new AHRS(NavXComType.kMXP_SPI);
 
-  private SlewRateLimiter m_translationLimiter = new SlewRateLimiter(OperatorConstants.translationLimit); // will be
-                                                                                                          // constants
+  private SlewRateLimiter m_translationLimiter = new SlewRateLimiter(OperatorConstants.translationLimit);
+  // will be constants
   private SlewRateLimiter m_rotationLimiter = new SlewRateLimiter(OperatorConstants.rotationLimit);
 
   private Config m_sysIdConfig;
@@ -141,8 +142,7 @@ public class DriveBase extends SubsystemBase {
   }
 
   private void convertSpeeds(double forward, double side, double rotate, boolean fieldOrient, boolean boost) {
-    double forwardVelocity =
-     boost ? forward * DrivetrainConstants.maxSpeed : forward * OperatorConstants.normalSpeed; // convert
+    double forwardVelocity = boost ? forward * DrivetrainConstants.maxSpeed : forward * OperatorConstants.normalSpeed; // convert
                                                                                                                        // %
                                                                                                                        // speed
                                                                                                                        // to
@@ -151,7 +151,8 @@ public class DriveBase extends SubsystemBase {
                                                                                                                        // apply
                                                                                                                        // boost
     double sideVelocity = boost ? side * DrivetrainConstants.maxSpeed : side * OperatorConstants.normalSpeed; // same ^
-    double rotateVelocity = boost ? rotate * DrivetrainConstants.maxRotationSpeed : rotate * OperatorConstants.rotationNormalSpeed; // same^
+    double rotateVelocity = boost ? rotate * DrivetrainConstants.maxRotationSpeed
+        : rotate * OperatorConstants.rotationNormalSpeed; // same^
     ChassisSpeeds speeds = new ChassisSpeeds(forwardVelocity, sideVelocity, rotateVelocity);
     SmartDashboard.putNumber("Intended Forward Speed", speeds.vxMetersPerSecond);
     SmartDashboard.putNumber("Intended Sideway Speed", speeds.vyMetersPerSecond);
@@ -163,13 +164,13 @@ public class DriveBase extends SubsystemBase {
     double linearVelocity = Math.sqrt((Math.pow(speeds.vxMetersPerSecond, 2) + Math.pow(speeds.vyMetersPerSecond, 2))); // pythagorean
                                                                                                                         // theorem
     linearVelocity = m_translationLimiter.calculate(linearVelocity);
-    //rotateVelocity = m_rotationLimiter.calculate(rotateVelocity);
+    // rotateVelocity = m_rotationLimiter.calculate(rotateVelocity);
     forwardVelocity = Math.sin(movementAngle) * linearVelocity;
     sideVelocity = Math.cos(movementAngle) * linearVelocity;
     speeds = new ChassisSpeeds(forwardVelocity, sideVelocity, rotateVelocity);
     applySpeeds(speeds);
   }
-  
+
   public void applySpeeds(ChassisSpeeds speeds) {
     SmartDashboard.putNumber("Forward Speed", speeds.vxMetersPerSecond);
     SmartDashboard.putNumber("Sideway Speed", speeds.vyMetersPerSecond);

@@ -27,6 +27,7 @@ import edu.wpi.first.units.measure.Voltage;
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+    public static final int kOperatorControllerPort = 1;
 
     public static final double translationLimit = 2.5; // for slewRateLimiters
     public static final double rotationLimit = 4;
@@ -45,7 +46,7 @@ public final class Constants {
 
 
 
-    public static final int pigeonID = 1;
+    public static final int pigeonID = 2;
 
     public static final double trackWidth = Units.inchesToMeters(28);
     public static final double wheelBase = Units.inchesToMeters(23);
@@ -87,13 +88,23 @@ public final class Constants {
     public static final int kDeployedLimitSwitchPort = 0; // DIO ports for limit switches
     public static final int kRetractedLimitSwitchPort = 1;
 
-    public static final double kDeploymentSpeed = 0.2;
+    public static final double kDeploymentSpeed = 0.2; //% speed
+    public static final double kRunningVolts = 6.0; //Volts
 
     public static final boolean kDeploymentInverted = false;
 
   }
 
+  public static class IndexerConstants {
+    public static final int kIndexMotorID = 52;
+
+    public static final double kVoltage = 3.0;
+  }
+
   public static class ShooterConstants {
+    public static final int kShooterMotorID = 53;
+
+    public static final double kVoltage = 6.0;
 
   }
 
