@@ -8,6 +8,9 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
@@ -15,13 +18,17 @@ import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -31,13 +38,18 @@ import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.OperatorConstants;
 
-public class DriveBase extends SubsystemBase {
+public class DriveBase extends SubsystemBase implements Sendable {
   SwerveDriveKinematics m_swerveDriveKinematics;
   MAXSwerveModule[] m_modules = new MAXSwerveModule[4];
-  private final Pigeon2 m_pigeon = new Pigeon2(DrivetrainConstants.pigeonID, "rio");
+  private final Pigeon2 m_pigeon = new Pigeon2(DrivetrainConstants.pigeonID);
   // Pigeon is on roboRIO CAN Bus with device ID 1
 
   private final AHRS m_navX = new AHRS(NavXComType.kMXP_SPI);
+
+  // private SwerveDriveOdometry m_odometer = new
+  // SwerveDriveOdometry(m_swerveDriveKinematics, getAngle(),
+  // getModulePositions());
+  private Field2d m_field = new Field2d();
 
   private SlewRateLimiter m_translationLimiter = new SlewRateLimiter(OperatorConstants.translationLimit);
   // will be constants
@@ -46,7 +58,6 @@ public class DriveBase extends SubsystemBase {
   private Config m_sysIdConfig;
   private Mechanism m_sysIdMechanism;
   private SysIdRoutine m_sysIdRoutine;
-  private MecanumDriveOdometry m_odometry;
 
   private final MutVoltage m_appliedVoltage = Volts.mutable(0);
   private final MutDistance m_distance = Meters.mutable(0);
@@ -133,6 +144,10 @@ public class DriveBase extends SubsystemBase {
     return Constants.DrivetrainConstants.kUsePigeon ? m_pigeon.getRotation2d() : m_navX.getRotation2d();
   }
 
+  private double getAngleDegrees() {
+    return getAngle().getDegrees();
+  }
+
   public void userDrive(double forward, double side, double rotate, boolean fieldOrient, boolean boost) {
     forward = Math.pow(forward, 3);
     side = Math.pow(side, 3);
@@ -142,14 +157,8 @@ public class DriveBase extends SubsystemBase {
   }
 
   private void convertSpeeds(double forward, double side, double rotate, boolean fieldOrient, boolean boost) {
-    double forwardVelocity = boost ? forward * DrivetrainConstants.maxSpeed : forward * OperatorConstants.normalSpeed; // convert
-                                                                                                                       // %
-                                                                                                                       // speed
-                                                                                                                       // to
-                                                                                                                       // MPS
-                                                                                                                       // and
-                                                                                                                       // apply
-                                                                                                                       // boost
+    double forwardVelocity = boost ? forward * DrivetrainConstants.maxSpeed : forward * OperatorConstants.normalSpeed;
+    // convert % speed to MPS and apply boost
     double sideVelocity = boost ? side * DrivetrainConstants.maxSpeed : side * OperatorConstants.normalSpeed; // same ^
     double rotateVelocity = boost ? rotate * DrivetrainConstants.maxRotationSpeed
         : rotate * OperatorConstants.rotationNormalSpeed; // same^
@@ -163,6 +172,7 @@ public class DriveBase extends SubsystemBase {
     double movementAngle = Math.atan2(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
     double linearVelocity = Math.sqrt((Math.pow(speeds.vxMetersPerSecond, 2) + Math.pow(speeds.vyMetersPerSecond, 2))); // pythagorean
                                                                                                                         // theorem
+    linearVelocity = linearVelocity < Constants.OperatorConstants.kTolerance ? 0 : linearVelocity;
     linearVelocity = m_translationLimiter.calculate(linearVelocity);
     // rotateVelocity = m_rotationLimiter.calculate(rotateVelocity);
     forwardVelocity = Math.sin(movementAngle) * linearVelocity;
@@ -183,6 +193,15 @@ public class DriveBase extends SubsystemBase {
     }
   }
 
+  /*
+   * Temporary Mentor code for testing FIXME
+   */
+  private SwerveModulePosition[] getModulePositions() {
+    // return (SwerveModulePosition[])
+    // Arrays.stream(m_modules).map(MAXSwerveModule::getPosition).toArray();
+    return null;
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -190,5 +209,16 @@ public class DriveBase extends SubsystemBase {
     SmartDashboard.putNumber("Front Right Angle Degrees", m_modules[1].getState().angle.getDegrees());
     SmartDashboard.putNumber("Back Left Angle Degrees", m_modules[2].getState().angle.getDegrees());
     SmartDashboard.putNumber("Back Right Angle Degrees", m_modules[3].getState().angle.getDegrees());
+
+    // Temporary Mentor Code for testing FIXME
+    // m_odometer.update(getAngle(), getModulePositions());
+    // m_field.setRobotPose(m_odometer.getPoseMeters());
+    // SmartDashboard.putData("Field", m_field);
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    builder.setSmartDashboardType("SwerveModule");
+    builder.addDoubleProperty("gyroAngle", this::getAngleDegrees, null);
   }
 }

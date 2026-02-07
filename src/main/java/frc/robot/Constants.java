@@ -29,11 +29,13 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
 
-    public static final double translationLimit = 2.5; // for slewRateLimiters
-    public static final double rotationLimit = 4;
+    public static final double translationLimit = 1.0;//2.5 // for slewRateLimiters
+    public static final double rotationLimit = 2.0;
 
-    public static final double normalSpeed = 2; // Meters PS
-    public static final double rotationNormalSpeed = 2.5; // Radians PS
+    public static final double normalSpeed = 1; // Meters PS
+    public static final double rotationNormalSpeed = 1; // Radians PS
+
+    public static final double kTolerance = 0.15;
   }
 
   public static class DrivetrainConstants {
@@ -44,15 +46,13 @@ public final class Constants {
     public static final Voltage kStepVoltage = null;
     public static final Time kTimeout = null;
 
-
-
     public static final int pigeonID = 2;
 
     public static final double trackWidth = Units.inchesToMeters(28);
     public static final double wheelBase = Units.inchesToMeters(23);
 
-    public static final double maxSpeed = 5.08257664976; // MPS
-    public static final double maxRotationSpeed = 11.0448342483; // Radians PS //11.0448342483
+    public static final double maxSpeed = 5.08257664976; // MPS Theoretical
+    public static final double maxRotationSpeed = 11.0448342483; // Radians PS Theoretical
 
     public enum SwerveModules {
       frontLeft(new Translation2d(wheelBase / 2, trackWidth / 2), 10, 11, true, new Rotation2d(5.459)),
@@ -82,27 +82,50 @@ public final class Constants {
   }
 
   public static class IntakeConstants {
-    public static final int kIntakeDeploymentID = 50;
-    public static final int kIntakeRunningID = 51;
+    public static final int kIntakeLeadDeploymentID = 50;
+    public static final int kIntakeFollowDeploymentID = 51;
+    public static final int kIntakeRunningID = 52;
 
     public static final int kDeployedLimitSwitchPort = 0; // DIO ports for limit switches
     public static final int kRetractedLimitSwitchPort = 1;
 
-    public static final double kDeploymentSpeed = 0.2; //% speed
-    public static final double kRunningVolts = 6.0; //Volts
+    // PID values
+    private static final double kDeployPEstimate = (1.0 / 3.0) * (1.0 / 3.0) * 12;
+    // 1.0/3.0 - meters to travel - 1.0/3.0 - 1/seconds travel time - 12 - Volts
+    public static final double kDeployP = kDeployPEstimate; // Estimate of volts - 0 meters to 1/3 in 3 seconds
+    public static final double kDeployI = 0;
+    public static final double kDeployD = 0;
+
+    // FF values
+    public static final double kDeployS = 0;
+    public static final double kDeployV = 0;
+    public static final double kDeployA = 0;
+
+    public static final double kRotationsToMeters = Units.inchesToMeters(0.5 / 1.0); // Jackscrew rotations to meters
+                                                                                     // travelled
+    public static final double kGearRatio = 1.0 / 3.0; // gear ratio
+    private static final double kMotorMaxSpeedRPM = 11000; // NEO 550 free speed
+
+    public static final double kMaxDeploySpeedMPS = ((kMotorMaxSpeedRPM * kGearRatio) / 60.0) * kRotationsToMeters;
+
+    public static final double kDeployDistanceMeters = Units.inchesToMeters(13.25); // 13.25 inches extension
+    public static final double kDeployToleranceMeters = Units.inchesToMeters(1.0); // 1 inch tolerance
+
+    public static final double kDeploymentSpeed = 0.2; // % speed
+    public static final double kRunningVolts = 12.0; // Volts
 
     public static final boolean kDeploymentInverted = false;
 
   }
 
   public static class IndexerConstants {
-    public static final int kIndexMotorID = 52;
+    public static final int kIndexMotorID = 53;
 
     public static final double kVoltage = 3.0;
   }
 
   public static class ShooterConstants {
-    public static final int kShooterMotorID = 53;
+    public static final int kShooterMotorID = 54;
 
     public static final double kVoltage = 6.0;
 
