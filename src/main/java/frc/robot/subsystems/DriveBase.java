@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
@@ -34,7 +35,8 @@ import frc.robot.Constants.OperatorConstants;
 public class DriveBase extends SubsystemBase {
   SwerveDriveKinematics m_swerveDriveKinematics;
   MAXSwerveModule[] m_modules = new MAXSwerveModule[4];
-  private final Pigeon2 m_pigeon = new Pigeon2(DrivetrainConstants.pigeonID, "rio");
+  public final CANBus m_rioCANBus = new CANBus(); // the default CAN bus, called "rio" on the Roborio
+  private final Pigeon2 m_pigeon = new Pigeon2(DrivetrainConstants.pigeonID, m_rioCANBus);
   // Pigeon is on roboRIO CAN Bus with device ID 1
 
   private final AHRS m_navX = new AHRS(NavXComType.kMXP_SPI);
