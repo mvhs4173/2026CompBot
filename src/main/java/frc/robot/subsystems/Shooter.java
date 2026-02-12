@@ -4,15 +4,21 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.ShooterConstants;
 
 public class Shooter extends SubsystemBase {
-  public final SparkMax m_ShooterMotor = new SparkMax(Constants.ShooterConstants.kShooterMotorID, MotorType.kBrushless);
+  public final SparkMax m_shooterMotor = new SparkMax(ShooterConstants.kShooterMotorID, MotorType.kBrushless);
+  public final RelativeEncoder m_shooterEncoder = m_shooterMotor.getEncoder();
 
+  public final PIDController m_shooterPidController = 
+      new PIDController(ShooterConstants.kP, ShooterConstants.kI, ShooterConstants.kD);
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -22,15 +28,17 @@ public class Shooter extends SubsystemBase {
   //Might make code for adjustable hood
 
   public void shoot() {
-    m_ShooterMotor.setVoltage(Constants.ShooterConstants.kVoltage);
+    //m_ShooterMotor.setVoltage(Constants.ShooterConstants.kVoltage);
+    double volts = m_shooterPidController.calculate(
+      m_shooterEncoder.getVelocity() / 60, 0); //encoder rpm / 60 = rps //TODO: setpoint calculations
   }
 
   public void stop() {
-    m_ShooterMotor.setVoltage(0);
+    m_shooterMotor.setVoltage(0);
   }
 
   public void reverse() {
-    m_ShooterMotor.setVoltage(-Constants.ShooterConstants.kVoltage);
+    m_shooterMotor.setVoltage(-Constants.ShooterConstants.kVoltage);
   }
 
 

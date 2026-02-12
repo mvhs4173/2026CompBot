@@ -127,6 +127,13 @@ public final class Constants {
   public static class ShooterConstants {
     public static final int kShooterMotorID = 54;
 
+    public static final double kMaxRPS = 5676.0 / 60.0; //max RPM of NEO 1650 / 60 for RPS (= to 94.6)
+    public static final double kDesiredShootingSpeedRadians = 0;
+
+    public static final double kP = kMaxRPS / 12.0; //max speed / 12 volts as an estimate
+    public static final double kI = 0;
+    public static final double kD = 0;
+
     public static final double kVoltage = 6.0;
 
   }
