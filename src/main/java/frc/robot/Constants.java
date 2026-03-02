@@ -82,8 +82,8 @@ public final class Constants {
   }
 
   public static class IntakeConstants {
-    public static final int kIntakeLeadDeploymentID = 50;
-    public static final int kIntakeFollowDeploymentID = 51;
+    public static final int kLeadIntakeDeploymentID = 50;
+    public static final int kFollowIntakeDeploymentID = 51;
     public static final int kIntakeRunningID = 52;
 
     public static final int kDeployedLimitSwitchPort = 0; // DIO ports for limit switches
@@ -119,13 +119,15 @@ public final class Constants {
   }
 
   public static class IndexerConstants {
-    public static final int kIndexMotorID = 53;
+    public static final int kLeadIndexMotorID = 53;
+    public static final int kFollowIndexMotorID = 54;
 
     public static final double kVoltage = 3.0;
   }
 
   public static class ShooterConstants {
-    public static final int kShooterMotorID = 54;
+    public static final int kLeadShooterMotorID = 55;
+    public static final int kFollowShooterMotorID = 56;
 
     public static final double kMaxRPS = 5676.0 / 60.0; //max RPM of NEO 1650 / 60 for RPS (= to 94.6)
     public static final double kDesiredShootingSpeedRadians = 0;

@@ -6,7 +6,11 @@ package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -14,18 +18,31 @@ import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 
 public class Shooter extends SubsystemBase {
-  public final SparkMax m_shooterMotor = new SparkMax(ShooterConstants.kShooterMotorID, MotorType.kBrushless);
-  public final RelativeEncoder m_shooterEncoder = m_shooterMotor.getEncoder();
+  private final SparkMax m_leadShooterMotor = new SparkMax(ShooterConstants.kLeadShooterMotorID, MotorType.kBrushless);
+  private final SparkMax m_followShooterMotor = new SparkMax(ShooterConstants.kFollowShooterMotorID, MotorType.kBrushless);
 
-  public final PIDController m_shooterPidController = 
+  private SparkMaxConfig m_leadShooterConfig = new SparkMaxConfig();
+  private SparkMaxConfig m_followShooterConfig = new SparkMaxConfig();
+
+  private final RelativeEncoder m_shooterEncoder = m_leadShooterMotor.getEncoder();
+
+  private final PIDController m_shooterPidController = 
       new PIDController(ShooterConstants.kP, ShooterConstants.kI, ShooterConstants.kD);
+
+  
 
   /** Creates a new Shooter. */
   public Shooter() {
+    m_leadShooterConfig
+    .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
+    m_leadShooterMotor.configure(m_leadShooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    m_followShooterConfig
+    .follow(ShooterConstants.kLeadShooterMotorID)
+    .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
+    m_followShooterMotor.configure(m_followShooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
   }
-
-  //Might make code for adjustable hood
 
   public void shoot() {
     //m_ShooterMotor.setVoltage(Constants.ShooterConstants.kVoltage);
@@ -34,12 +51,16 @@ public class Shooter extends SubsystemBase {
   }
 
   public void stop() {
-    m_shooterMotor.setVoltage(0);
+    m_leadShooterMotor.setVoltage(0);
   }
 
   public void reverse() {
-    m_shooterMotor.setVoltage(-Constants.ShooterConstants.kVoltage);
+    m_leadShooterMotor.setVoltage(-Constants.ShooterConstants.kVoltage);
   }
+
+  //Adjustable hood
+
+
 
 
 
