@@ -126,6 +126,14 @@ public final class Constants {
   }
 
   public static class ShooterConstants {
+    public static final int kLeftHoodServoChannel = 0;
+    public static final int kRightHoodServoChannel = 1;
+
+    public static final Rotation2d kHoodMinimumAngle = Rotation2d.fromDegrees(0); //TODO: measure angle(s)
+    public static final Rotation2d kHoodMaximumAngle = Rotation2d.fromDegrees(0);
+    public static final double kHoodMaximumMechanicalExtension = 0.80; //Percent of extension to safely retract
+
+
     public static final int kLeadShooterMotorID = 55;
     public static final int kFollowShooterMotorID = 56;
 
