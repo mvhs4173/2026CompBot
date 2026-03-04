@@ -5,28 +5,46 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.IndexerConstants;
 
 public class Indexer extends SubsystemBase {
-  private final SparkMax m_indexMotor = new SparkMax(Constants.IndexerConstants.kIndexMotorID, MotorType.kBrushless);
+  private final SparkMax m_leadIndexMotor = new SparkMax(IndexerConstants.kLeadIndexMotorID, MotorType.kBrushless);
+  private final SparkMax m_followIndexMotor = new SparkMax(IndexerConstants.kFollowIndexMotorID, MotorType.kBrushless);
+
+  private SparkMaxConfig m_leadIndexConfig = new SparkMaxConfig();
+  private SparkMaxConfig m_followIndexConfig = new SparkMaxConfig();
+
 
   /** Creates a new Indexer. */
   public Indexer() {
+    m_leadIndexConfig
+    .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kBrake);
+    m_leadIndexMotor.configure(m_leadIndexConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    m_followIndexConfig
+    .follow(IndexerConstants.kLeadIndexMotorID)
+    .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kBrake);
+    m_followIndexMotor.configure(m_followIndexConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void indexIn() {
-    m_indexMotor.setVoltage(Constants.IndexerConstants.kVoltage);
+    m_leadIndexMotor.setVoltage(IndexerConstants.kVoltage);
   }
 
   public void indexStop() {
-    m_indexMotor.setVoltage(0.0);
+    m_leadIndexMotor.setVoltage(0.0);
   }
 
   public void indexReverse() {
-    m_indexMotor.setVoltage(-Constants.IndexerConstants.kVoltage);
+    m_leadIndexMotor.setVoltage(-IndexerConstants.kVoltage);
   }
 
   @Override

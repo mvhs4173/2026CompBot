@@ -14,6 +14,8 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -29,6 +31,8 @@ import frc.robot.Constants.DrivetrainConstants;
 public class MAXSwerveModule implements Sendable {
   private final TalonFX m_drivingTalon;
   private final SparkMax m_turningSpark;
+
+  private final SparkMaxConfig m_turningSparkConfig = new SparkMaxConfig();
 
   // private final RelativeEncoder m_drivingEncoder;
   private final AbsoluteEncoder m_turningEncoder;
@@ -50,6 +54,10 @@ public class MAXSwerveModule implements Sendable {
   public MAXSwerveModule(DrivetrainConstants.SwerveModules module) {
     m_drivingTalon = new TalonFX(module.driveID);
     m_turningSpark = new SparkMax(module.turnID, MotorType.kBrushless);
+
+    m_turningSparkConfig.smartCurrentLimit(20).inverted(false).idleMode(IdleMode.kBrake);
+
+    m_turningSpark.configure(m_turningSparkConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     m_turningEncoder = m_turningSpark.getAbsoluteEncoder();
 
