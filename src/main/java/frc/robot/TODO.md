@@ -1,14 +1,11 @@
-# Change Intake Deployment to use two motors and motion controllers
-- [X] Create Intake.m_leadDeploymentSparkMax - private (with canid)
-- [X] Create Intake.m_followDeploymentSparkMax - private (with canid)
-- [X] Set m_followSpark to follow m_leadSpark via config.
-- [X] Create Intake.m_deploymentPIDController - private (with constants)
-- [X] Create Intake.m_deploymentFFController - private (with constants)
-- [X] Create Intake.getDeploymentExtensionMeters() - returns double
-- [X] Change Intake deployment and retraction to use motion controllers (set voltage to FF.calc + PID.calc)
-- [X] Periodically put the deployment extension in inches to SmartDashboard (Hint: use Units)
+- [ ] Switch Indexer to using two motors. Start by using the same type of code as Shooter, then we will switch it to adjust the output voltage to each motor based on current to more accurately share the load across both motors.
 
-# Stretch goals for saturday and goals for week 5
+- [ ] Override sendable methods in Indexer so it more accurately shows information for debug.
+
+- [ ] Switch lead screw control from using mirrored voltage (follow) to using mirrored position, ie use the same pid constants, but different controllers.
+
+- [ ] Switch Indexer to using PID to have more constant velocity for better control and predictability.
+
 - [ ] Create a flow chart of auto options (Consult any on your team interested in strategy [Drive team probably])
 **IMPORTANT** Do not overcomplicate this! 3 static auto options should be sufficient for now. Keep in mind where you start, what you do first, what you do last, and where you need to go to do what you need to do.
 
