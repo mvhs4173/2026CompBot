@@ -84,9 +84,9 @@ public class Shooter extends SubsystemBase {
   }
 
   public void shoot() {
-    //m_ShooterMotor.setVoltage(Constants.ShooterConstants.kVoltage);
     double volts = m_shooterPidController.calculate(
-      m_shooterEncoder.getVelocity() / 60, 0); //encoder rpm / 60 = rps //TODO: setpoint calculations
+      m_shooterEncoder.getVelocity() / 60, ShooterConstants.kShooterVelocitySetpoint); //encoder rpm / 60 = rps
+    m_leadShooterMotor.setVoltage(volts);
   }
 
   public void stop() {

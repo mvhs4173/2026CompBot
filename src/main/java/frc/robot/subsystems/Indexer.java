@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -11,6 +12,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IndexerConstants;
@@ -21,6 +23,11 @@ public class Indexer extends SubsystemBase {
 
   private SparkMaxConfig m_leadIndexConfig = new SparkMaxConfig();
   private SparkMaxConfig m_followIndexConfig = new SparkMaxConfig();
+
+  private RelativeEncoder m_leadEncoder = m_leadIndexMotor.getEncoder();
+
+  private final PIDController m_indexPIDController = 
+    new PIDController(IndexerConstants.kP, IndexerConstants.kI, IndexerConstants.kD);
 
 
   /** Creates a new Indexer. */
@@ -36,7 +43,9 @@ public class Indexer extends SubsystemBase {
   }
 
   public void indexIn() {
-    m_leadIndexMotor.setVoltage(IndexerConstants.kVoltage);
+    double volts =
+      m_indexPIDController.calculate(m_leadEncoder.getVelocity() / 60, IndexerConstants.kIndexVelocitySetpoint); //rpm / 60 = rps
+    m_leadIndexMotor.setVoltage(volts);
   }
 
   public void indexStop() {

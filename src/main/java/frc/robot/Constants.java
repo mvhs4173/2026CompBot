@@ -122,6 +122,13 @@ public final class Constants {
     public static final int kLeadIndexMotorID = 53;
     public static final int kFollowIndexMotorID = 54;
 
+    //PID values
+    public static final double kP = 0; //TODO: determine values
+    public static final double kI = 0;
+    public static final double kD = 0;
+
+    public static final double kIndexVelocitySetpoint = 0; //Setpoint for PID controller //TODO: setpoint calculations
+
     public static final double kVoltage = 3.0;
   }
 
@@ -143,6 +150,9 @@ public final class Constants {
     public static final double kP = kMaxRPS / 12.0; //max speed / 12 volts as an estimate
     public static final double kI = 0;
     public static final double kD = 0;
+
+    public static final double kShooterVelocitySetpoint = 0; //Setpoint for PID controller //TODO: setpoint calculations
+
 
     public static final double kVoltage = 6.0;
 

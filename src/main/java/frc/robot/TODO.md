@@ -1,10 +1,10 @@
-- [ ] Switch Indexer to using two motors. Start by using the same type of code as Shooter, then we will switch it to adjust the output voltage to each motor based on current to more accurately share the load across both motors.
+- [X] Switch Indexer to using two motors. Start by using the same type of code as Shooter, then we will switch it to adjust the output voltage to each motor based on current to more accurately share the load across both motors.
 
 - [ ] Switch lead screw control from using mirrored voltage (follow) to using mirrored position, ie use the same pid constants, but different controllers.
 
-- [ ] Switch Indexer to using PID to have more constant velocity for better control and predictability.
+- [X] Switch Indexer to using PID to have more constant velocity for better control and predictability.
 
-- [ ] Apply motor voltage and give controller velocity setpoint for shooter.
+- [X] Apply motor voltage and give controller velocity setpoint for shooter.
 
 - [ ] Make bare minimum Auto Commmand (Sequential Command Group)
 
