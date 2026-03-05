@@ -20,14 +20,20 @@ import frc.robot.Constants.IndexerConstants;
 public class Indexer extends SubsystemBase {
   private final SparkMax m_leadIndexMotor = new SparkMax(IndexerConstants.kLeadIndexMotorID, MotorType.kBrushless);
   private final SparkMax m_followIndexMotor = new SparkMax(IndexerConstants.kFollowIndexMotorID, MotorType.kBrushless);
+  private final SparkMax m_topRollerMotor = new SparkMax(IndexerConstants.kTopRollerMotorID, MotorType.kBrushless);
 
   private SparkMaxConfig m_leadIndexConfig = new SparkMaxConfig();
   private SparkMaxConfig m_followIndexConfig = new SparkMaxConfig();
+  private SparkMaxConfig m_topRollerConfig = new SparkMaxConfig();
 
   private RelativeEncoder m_leadEncoder = m_leadIndexMotor.getEncoder();
+  private RelativeEncoder m_topRollerEncoder = m_topRollerMotor.getEncoder();
 
   private final PIDController m_indexPIDController = 
-    new PIDController(IndexerConstants.kP, IndexerConstants.kI, IndexerConstants.kD);
+    new PIDController(IndexerConstants.kIndexP, IndexerConstants.kIndexI, IndexerConstants.kIndexD);
+
+  private final PIDController m_topRollerPIDController = 
+    new PIDController(IndexerConstants.kTopRollerP, IndexerConstants.kTopRollerI, IndexerConstants.kTopRollerD);
 
 
   /** Creates a new Indexer. */
@@ -40,11 +46,16 @@ public class Indexer extends SubsystemBase {
     .follow(IndexerConstants.kLeadIndexMotorID)
     .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kBrake);
     m_followIndexMotor.configure(m_followIndexConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    m_topRollerConfig
+    .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kBrake);
+    m_topRollerMotor.configure(m_topRollerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void indexIn() {
     double volts =
-      m_indexPIDController.calculate(m_leadEncoder.getVelocity() / 60, IndexerConstants.kIndexVelocitySetpoint); //rpm / 60 = rps
+      m_indexPIDController.calculate(
+        m_leadEncoder.getVelocity() / 60, IndexerConstants.kIndexVelocitySetpoint); //rpm / 60 = rps
     m_leadIndexMotor.setVoltage(volts);
   }
 
@@ -54,6 +65,21 @@ public class Indexer extends SubsystemBase {
 
   public void indexReverse() {
     m_leadIndexMotor.setVoltage(-IndexerConstants.kVoltage);
+  }
+
+  public void topRollerIn() {
+    double volts = 
+      m_topRollerPIDController.calculate(
+        m_topRollerEncoder.getVelocity() / 60, IndexerConstants.kTopRollerVelocitySetpoint); //rpm / 60 = rps
+    m_topRollerMotor.setVoltage(volts);
+  }
+
+  public void topRollerStop() {
+    m_topRollerMotor.setVoltage(0);
+  }
+
+  public void topRollerReverse() {
+    m_topRollerMotor.setVoltage(-IndexerConstants.kVoltage);
   }
 
   @Override

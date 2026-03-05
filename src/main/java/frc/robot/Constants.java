@@ -121,13 +121,19 @@ public final class Constants {
   public static class IndexerConstants {
     public static final int kLeadIndexMotorID = 53;
     public static final int kFollowIndexMotorID = 54;
+    public static final int kTopRollerMotorID = 55;
 
     //PID values
-    public static final double kP = 0; //TODO: determine values
-    public static final double kI = 0;
-    public static final double kD = 0;
+    public static final double kIndexP = 0; //TODO: determine values
+    public static final double kIndexI = 0;
+    public static final double kIndexD = 0;
+
+    public static final double kTopRollerP = 0;
+    public static final double kTopRollerI = 0;
+    public static final double kTopRollerD = 0;
 
     public static final double kIndexVelocitySetpoint = 0; //Setpoint for PID controller //TODO: setpoint calculations
+    public static final double kTopRollerVelocitySetpoint = 0;
 
     public static final double kVoltage = 3.0;
   }
@@ -141,8 +147,8 @@ public final class Constants {
     public static final double kHoodMaximumMechanicalExtension = 0.80; //Percent of extension to safely retract
 
 
-    public static final int kLeadShooterMotorID = 55;
-    public static final int kFollowShooterMotorID = 56;
+    public static final int kLeadShooterMotorID = 56;
+    public static final int kFollowShooterMotorID = 57;
 
     public static final double kMaxRPS = 5676.0 / 60.0; //max RPM of NEO 1650 / 60 for RPS (= to 94.6)
     public static final double kDesiredShootingSpeedRadians = 0;
