@@ -169,8 +169,7 @@ public class DriveBase extends SubsystemBase implements Sendable {
       speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getAngle()); // needs function to get angle from pig
     }
     double movementAngle = Math.atan2(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
-    double linearVelocity = Math.sqrt((Math.pow(speeds.vxMetersPerSecond, 2) + Math.pow(speeds.vyMetersPerSecond, 2))); // pythagorean
-                                                                                                                        // theorem
+    double linearVelocity = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond); // pythagorean theorem
     linearVelocity = linearVelocity < Constants.OperatorConstants.kTolerance ? 0 : linearVelocity;
     linearVelocity = m_translationLimiter.calculate(linearVelocity);
     // rotateVelocity = m_rotationLimiter.calculate(rotateVelocity);

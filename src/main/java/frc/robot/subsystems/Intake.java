@@ -184,7 +184,7 @@ public class Intake extends SubsystemBase {
     m_leftDeployMotor.setVoltage(0.0);
     m_rightDeployMotor.setVoltage(0.0);
   }
-  
+
 
   private Command getDeployCommand() {
     return new RunCommand(this::deploy, this)
@@ -197,6 +197,8 @@ public class Intake extends SubsystemBase {
         .until(this::isRetracted)
         .finallyDo(this::stopDeployMotors);
   }
+
+  
 
   @Override
   public void periodic() {
