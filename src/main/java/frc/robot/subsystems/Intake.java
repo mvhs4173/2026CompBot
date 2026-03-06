@@ -11,6 +11,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.ResetMode;
 
@@ -26,15 +27,18 @@ import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 
 public class Intake extends SubsystemBase {
-  private final SparkMax m_leadDeployMotor = new SparkMax(Constants.IntakeConstants.kLeadIntakeDeploymentID,
+  private final SparkMax m_leftDeployMotor = new SparkMax(Constants.IntakeConstants.kLeadIntakeDeploymentID,
       MotorType.kBrushless);
-  private final SparkMax m_followDeployMotor = new SparkMax(Constants.IntakeConstants.kFollowIntakeDeploymentID,
+  private final SparkMax m_rightDeployMotor = new SparkMax(Constants.IntakeConstants.kFollowIntakeDeploymentID,
       MotorType.kBrushless);
   private final SparkMax m_runningMotor = new SparkMax(IntakeConstants.kIntakeRunningID,
       MotorType.kBrushless);
 
-  private SparkMaxConfig m_leadDeployConfig = new SparkMaxConfig();
-  private SparkMaxConfig m_followDeployConfig = new SparkMaxConfig();
+  private final RelativeEncoder m_leftDeployEncoder = m_leftDeployMotor.getEncoder();
+  private final RelativeEncoder m_rightDeployEncoder = m_rightDeployMotor.getEncoder();
+
+  private SparkMaxConfig m_leftDeployConfig = new SparkMaxConfig();
+  private SparkMaxConfig m_rightDeployConfig = new SparkMaxConfig();
   private SparkMaxConfig m_runningConfig = new SparkMaxConfig();
 
   private PIDController m_deploymentPIDController = new PIDController(
@@ -51,14 +55,13 @@ public class Intake extends SubsystemBase {
 
   /** Creates a new Intake. */
   public Intake() {
-    m_leadDeployConfig
+    m_leftDeployConfig
     .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
-    m_leadDeployMotor.configure(m_followDeployConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_leftDeployMotor.configure(m_rightDeployConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    m_followDeployConfig
-    .follow(IntakeConstants.kLeadIntakeDeploymentID)
+    m_rightDeployConfig //.follow(IntakeConstants.kLeadIntakeDeploymentID)
     .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
-    m_followDeployMotor.configure(m_followDeployConfig, com.revrobotics.ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    m_rightDeployMotor.configure(m_rightDeployConfig, com.revrobotics.ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
  
     m_runningConfig.inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kBrake);
     m_runningMotor.configure(m_runningConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -67,36 +70,72 @@ public class Intake extends SubsystemBase {
 
   // Running
 
+  /**
+   * Sets the voltage of the intake roller to IntakeConstants.kRunningVOlts
+   */
   public void runIntake() {
     m_runningMotor.setVoltage(IntakeConstants.kRunningVolts);
   }
 
+  /**
+   * Sets the voltage of the intake roller to 0.0
+   */
   public void stopIntake() {
-    m_runningMotor.setVoltage(0);
+    m_runningMotor.setVoltage(0.0);
   }
 
+  /**
+   * Sets the voltage of the intake roller to -IntakeConstants.kRunningVolts
+   */
   public void reverseIntake() {
-    m_runningMotor.setVoltage(IntakeConstants.kRunningVolts);
+    m_runningMotor.setVoltage(-IntakeConstants.kRunningVolts);
   }
 
   // Deployment
 
-  public double getDeploymentExtensionMeters() {
-    return 0;//m_leadDeployMotor.getEncoder().getPosition() * IntakeConstants.kGearRatio
-        // * IntakeConstants.kRotationsToMeters;
+  /**
+   * Calculates the deployment of the left motor in meters
+   * @return Encoder position * Gear ratio * Rotation to Meters values
+   */
+  public double getLeftDeploymentExtensionMeters() {
+    return m_leftDeployEncoder.getPosition() * IntakeConstants.kGearRatio
+        * IntakeConstants.kRotationsToMeters;
   }
 
+  /**
+   * Calculates the deployment of the right motor in meters
+   * @return Encoder position * Gear ratio * Rotation to Meters values
+   */
+  public double getRightDeploymentExtensionMeters() {
+    return m_rightDeployEncoder.getPosition() * IntakeConstants.kGearRatio
+        * IntakeConstants.kRotationsToMeters;
+  }
+
+  /**
+   * Calculates if the intake is fully deployed
+   * @return True if either the deployed limit switch is true
+   *   or the extension - the distance for deployment is less than a certain tolerance. False if neither
+   */
   private boolean isDeployed() {
     return m_deploymentStatus = m_deployedLimitSwitch.get()
-        || Math.abs(getDeploymentExtensionMeters()
+        || Math.abs(getLeftDeploymentExtensionMeters()
             - IntakeConstants.kDeployDistanceMeters) < IntakeConstants.kDeployToleranceMeters;
   }
 
+  /**
+   * Calculates if the intake is fully retracted
+   * @return True if either the retracted limit switch is true or the extension is less than a certain tolerance. False if neither
+   */
   private boolean isRetracted() {
     return m_deploymentStatus = m_retractedLimitSwitch.get()
-        || Math.abs(getDeploymentExtensionMeters()) < IntakeConstants.kDeployToleranceMeters;
+        || Math.abs(getLeftDeploymentExtensionMeters()) < IntakeConstants.kDeployToleranceMeters;
   }
 
+
+  /**
+   * Schedules either the getDeployCommand or the getRetractCommand
+   * @param deploy True: Schedules deploy command, False: Schedules retract command
+   */
   public void setDeployment(boolean deploy) {
     if (deploy) {
       CommandScheduler.getInstance().schedule(getDeployCommand());
@@ -105,42 +144,63 @@ public class Intake extends SubsystemBase {
     }
   }
 
+  /**
+   * Calls setDeployment, with a boolean value opposite of the current deployment status
+   */
   public void toggleDeploy() {
     setDeployment(!m_deploymentStatus);
   }
 
+  /**
+   * Calculates PID for both motors with a setpoint of IntakeConstants.kDeployDistanceMeters and sets the voltage of the motors
+   */
   private void deploy() {
-    double volts = m_deploymentPIDController.calculate(
-        getDeploymentExtensionMeters(), IntakeConstants.kDeployDistanceMeters);
-    // m_leadDeployMotor.setVoltage(volts);
-    ;
+    double leftVolts = m_deploymentPIDController.calculate(
+        getLeftDeploymentExtensionMeters(), IntakeConstants.kDeployDistanceMeters);
+    double rightVolts = m_deploymentPIDController.calculate(
+        getRightDeploymentExtensionMeters(), IntakeConstants.kDeployDistanceMeters);
+
+    m_leftDeployMotor.setVoltage(leftVolts);
+    m_rightDeployMotor.setVoltage(rightVolts);
   }
 
+  /**
+   * Calculates PID for both motors with a setpoint of 0 meters and sets the voltage of the motors
+   */
   private void retract() {
-    double volts = m_deploymentPIDController.calculate(
-        getDeploymentExtensionMeters(), 0.0);
-    // m_leadDeployMotor.setVoltage(volts);
+    double leftVolts = m_deploymentPIDController.calculate(
+        getLeftDeploymentExtensionMeters(), 0.0);
+    double rightVolts = m_deploymentPIDController.calculate(
+        getRightDeploymentExtensionMeters(), 0.0);
+        
+    m_leftDeployMotor.setVoltage(leftVolts);
+    m_rightDeployMotor.setVoltage(rightVolts);
   }
 
-  public void stopDeployMotor() {
-    // m_leadDeployMotor.setVoltage(0);
+  /**
+   *  Sets the voltage of both deployment motors to 0.0
+   */
+  public void stopDeployMotors() {
+    m_leftDeployMotor.setVoltage(0.0);
+    m_rightDeployMotor.setVoltage(0.0);
   }
+  
 
   private Command getDeployCommand() {
     return new RunCommand(this::deploy, this)
         .until(this::isDeployed)
-        .finallyDo(this::stopDeployMotor);
+        .finallyDo(this::stopDeployMotors);
   }
 
   private Command getRetractCommand() {
     return new RunCommand(this::retract, this)
         .until(this::isRetracted)
-        .finallyDo(this::stopDeployMotor);
+        .finallyDo(this::stopDeployMotors);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("Intake Deployment Extension Meters", getDeploymentExtensionMeters());
+    SmartDashboard.putNumber("Intake Deployment Extension Meters", getLeftDeploymentExtensionMeters());
   }
 }
