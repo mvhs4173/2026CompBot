@@ -116,6 +116,9 @@ public final class Constants {
 
     public static final boolean kDeploymentInverted = false;
 
+    public static final boolean kLeftDeployEncoderInverted = false;
+    public static final boolean kRightDeployEncoderInverted = false;
+
   }
 
   public static class IndexerConstants {
@@ -124,16 +127,21 @@ public final class Constants {
     public static final int kTopRollerMotorID = 55;
 
     //PID values
-    public static final double kIndexP = 0; //TODO: determine values
+    public static final double kIndexP = 12.0 / (48.0 / 5.0); // volts / ((max RPS-ish / 2) / gear ratio (5:1))
     public static final double kIndexI = 0;
     public static final double kIndexD = 0;
 
-    public static final double kTopRollerP = 0;
+    public static final double kTopRollerP = 12.0 / (48.0 / 3.0); //volts / ((max RPS-ish / 2) / gear ratio (3:1))
     public static final double kTopRollerI = 0;
     public static final double kTopRollerD = 0;
 
-    public static final double kIndexVelocitySetpoint = 0; //Setpoint for PID controller //TODO: setpoint calculations
-    public static final double kTopRollerVelocitySetpoint = 0;
+    public static final double kPowerCorrectionP = 0; //TODO: figure this out if needed
+    public static final double kPowerCorrectionI = 0;
+    public static final double kPowerCorrectionD = 0;
+
+    //Setpoint for PID controller //TODO: setpoint calculations
+    public static final double kIndexVelocitySetpoint = (48.0 / 5.0); //1/2 Max rps / gear ratio 
+    public static final double kTopRollerVelocitySetpoint = (48.0 / 3.0); //Same
 
     public static final double kVoltage = 3.0;
   }
@@ -142,8 +150,8 @@ public final class Constants {
     public static final int kLeftHoodServoChannel = 0;
     public static final int kRightHoodServoChannel = 1;
 
-    public static final Rotation2d kHoodMinimumAngle = Rotation2d.fromDegrees(0); //TODO: measure angle(s)
-    public static final Rotation2d kHoodMaximumAngle = Rotation2d.fromDegrees(0);
+    public static final Rotation2d kHoodMinimumAngle = Rotation2d.fromDegrees(-74.2); //Angles roughly measured
+    public static final Rotation2d kHoodMaximumAngle = Rotation2d.fromDegrees(-43);
     public static final double kHoodMaximumMechanicalExtension = 0.80; //Percent of extension to safely retract
 
 
@@ -153,14 +161,20 @@ public final class Constants {
     public static final double kMaxRPS = 5676.0 / 60.0; //max RPM of NEO 1650 / 60 for RPS (= to 94.6)
     public static final double kDesiredShootingSpeedRadians = 0;
 
-    public static final double kP = kMaxRPS / 12.0; //max speed / 12 volts as an estimate
+    public static final double kP = kMaxRPS / 12.0 * 8; //max speed / 12 volts as an estimate * 10
     public static final double kI = 0;
     public static final double kD = 0;
 
-    public static final double kShooterVelocitySetpoint = 0; //Setpoint for PID controller //TODO: setpoint calculations
+    public static final double kShooterVelocitySetpoint = kMaxRPS; //Setpoint for PID controller //TODO: setpoint calculations
 
 
     public static final double kVoltage = 6.0;
+
+    //Sysid shtuff
+
+    public static final Velocity<VoltageUnit> kSysIdRampRate = null;
+    public static final Voltage kStepVoltage = null;
+    public static final Time kTimeout = null;
 
   }
 

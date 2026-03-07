@@ -6,9 +6,12 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.DriveBase;
+import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -26,8 +29,8 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveBase m_driveBase = new DriveBase();
   private final Intake m_intake = new Intake();
-  // private final Indexer m_indexer = new Indexer();
-  // private final Shooter m_shooter = new Shooter();
+  private final Indexer m_indexer = new Indexer();
+  private final Shooter m_shooter = new Shooter();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController = new CommandXboxController(
@@ -78,20 +81,20 @@ public class RobotContainer {
     // Run the Intake
     m_operatorController.a().whileTrue(new RunCommand(m_intake::runIntake, m_intake).finallyDo(m_intake::stopIntake));
 
-    // Flush - Reverse intake, indexer, and shooter
-    // m_operatorController.rightBumper()
-    //     .whileTrue(
-    //         new ParallelCommandGroup(
-    //             new RunCommand(m_intake::reverseIntake, m_intake).finallyDo(m_intake::stopIntake),
-    //             new RunCommand(m_indexer::indexReverse, m_indexer).finallyDo(m_indexer::indexStop),
-    //             new RunCommand(m_shooter::reverse, m_shooter).finallyDo(m_shooter::stop)));
+    //Flush - Reverse intake, indexer, and shooter
+    m_operatorController.rightBumper()
+        .whileTrue(
+            new ParallelCommandGroup(
+                new RunCommand(m_intake::reverseIntake, m_intake).finallyDo(m_intake::stopIntake),
+                new RunCommand(m_indexer::indexReverse, m_indexer).finallyDo(m_indexer::indexStop),
+                new RunCommand(m_shooter::reverse, m_shooter).finallyDo(m_shooter::stop)));
 
-    // Index in
-    // m_operatorController.leftBumper().whileTrue(new RunCommand(m_indexer::indexIn).finallyDo(m_indexer::indexStop));
+     //Index in
+     m_operatorController.leftBumper().whileTrue(new RunCommand(m_indexer::indexIn).finallyDo(m_indexer::indexStop));
 
-    // Shoot
-    // m_operatorController.rightTrigger()
-    //     .whileTrue(new RunCommand(m_shooter::shoot, m_shooter).finallyDo(m_shooter::stop));
+    //Shoot
+    m_operatorController.rightTrigger()
+        .whileTrue(new RunCommand(m_shooter::shoot, m_shooter).finallyDo(m_shooter::stop));
   }
 
   /**

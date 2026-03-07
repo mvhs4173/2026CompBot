@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import static edu.wpi.first.units.Units.Volts;
@@ -41,15 +42,20 @@ public class Intake extends SubsystemBase {
   private SparkMaxConfig m_rightDeployConfig = new SparkMaxConfig();
   private SparkMaxConfig m_runningConfig = new SparkMaxConfig();
 
-  private PIDController m_deploymentPIDController = new PIDController(
+  private EncoderConfig m_leftDeployEncoderConfig = new EncoderConfig();
+  private EncoderConfig m_rightDeployEncoderConfig = new EncoderConfig();
+
+  private PIDController m_leftDeploymentPIDController = new PIDController(
+      IntakeConstants.kDeployP, IntakeConstants.kDeployI, IntakeConstants.kDeployD);
+  private PIDController m_rightDeploymentPIDController = new PIDController(
       IntakeConstants.kDeployP, IntakeConstants.kDeployI, IntakeConstants.kDeployD);
   private SimpleMotorFeedforward m_deploymentFFController = new SimpleMotorFeedforward(
       IntakeConstants.kDeployS, IntakeConstants.kDeployV, IntakeConstants.kDeployA);
 
-  private final DigitalInput m_deployedLimitSwitch = new DigitalInput(
-      IntakeConstants.kDeployedLimitSwitchPort);
-  private final DigitalInput m_retractedLimitSwitch = new DigitalInput(
-      IntakeConstants.kRetractedLimitSwitchPort);
+  //private final DigitalInput m_deployedLimitSwitch = new DigitalInput(
+  //    IntakeConstants.kDeployedLimitSwitchPort);
+  //private final DigitalInput m_retractedLimitSwitch = new DigitalInput(
+  //    IntakeConstants.kRetractedLimitSwitchPort);
 
   private boolean m_deploymentStatus = false; // T means deployed F means retracted
 
@@ -59,12 +65,23 @@ public class Intake extends SubsystemBase {
     .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
     m_leftDeployMotor.configure(m_rightDeployConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+    m_leftDeployEncoderConfig
+      .positionConversionFactor(IntakeConstants.kRotationsToMeters * IntakeConstants.kGearRatio)
+      .inverted(IntakeConstants.kLeftDeployEncoderInverted);
+
     m_rightDeployConfig //.follow(IntakeConstants.kLeadIntakeDeploymentID)
     .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
     m_rightDeployMotor.configure(m_rightDeployConfig, com.revrobotics.ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
  
+    m_rightDeployEncoderConfig
+      .positionConversionFactor(IntakeConstants.kRotationsToMeters * IntakeConstants.kGearRatio)
+      .inverted(IntakeConstants.kRightDeployEncoderInverted);
+
     m_runningConfig.inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kBrake);
     m_runningMotor.configure(m_runningConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    m_leftDeploymentPIDController.setTolerance(IntakeConstants.kDeployToleranceMeters);
+    m_rightDeploymentPIDController.setTolerance(IntakeConstants.kDeployToleranceMeters);
 
   }
 
@@ -98,8 +115,7 @@ public class Intake extends SubsystemBase {
    * @return Encoder position * Gear ratio * Rotation to Meters values
    */
   public double getLeftDeploymentExtensionMeters() {
-    return m_leftDeployEncoder.getPosition() * IntakeConstants.kGearRatio
-        * IntakeConstants.kRotationsToMeters;
+    return m_leftDeployEncoder.getPosition();
   }
 
   /**
@@ -107,8 +123,7 @@ public class Intake extends SubsystemBase {
    * @return Encoder position * Gear ratio * Rotation to Meters values
    */
   public double getRightDeploymentExtensionMeters() {
-    return m_rightDeployEncoder.getPosition() * IntakeConstants.kGearRatio
-        * IntakeConstants.kRotationsToMeters;
+    return m_rightDeployEncoder.getPosition();
   }
 
   /**
@@ -117,8 +132,8 @@ public class Intake extends SubsystemBase {
    *   or the extension - the distance for deployment is less than a certain tolerance. False if neither
    */
   private boolean isDeployed() {
-    return m_deploymentStatus = m_deployedLimitSwitch.get()
-        || Math.abs(getLeftDeploymentExtensionMeters()
+    return m_deploymentStatus = // m_deployedLimitSwitch.get() || 
+      Math.abs(getLeftDeploymentExtensionMeters()
             - IntakeConstants.kDeployDistanceMeters) < IntakeConstants.kDeployToleranceMeters;
   }
 
@@ -127,8 +142,8 @@ public class Intake extends SubsystemBase {
    * @return True if either the retracted limit switch is true or the extension is less than a certain tolerance. False if neither
    */
   private boolean isRetracted() {
-    return m_deploymentStatus = m_retractedLimitSwitch.get()
-        || Math.abs(getLeftDeploymentExtensionMeters()) < IntakeConstants.kDeployToleranceMeters;
+    return m_deploymentStatus =// m_retractedLimitSwitch.get() ||
+     Math.abs(getLeftDeploymentExtensionMeters()) < IntakeConstants.kDeployToleranceMeters;
   }
 
 
@@ -155,9 +170,9 @@ public class Intake extends SubsystemBase {
    * Calculates PID for both motors with a setpoint of IntakeConstants.kDeployDistanceMeters and sets the voltage of the motors
    */
   private void deploy() {
-    double leftVolts = m_deploymentPIDController.calculate(
+    double leftVolts = m_leftDeploymentPIDController.calculate(
         getLeftDeploymentExtensionMeters(), IntakeConstants.kDeployDistanceMeters);
-    double rightVolts = m_deploymentPIDController.calculate(
+    double rightVolts = m_rightDeploymentPIDController.calculate(
         getRightDeploymentExtensionMeters(), IntakeConstants.kDeployDistanceMeters);
 
     m_leftDeployMotor.setVoltage(leftVolts);
@@ -168,9 +183,9 @@ public class Intake extends SubsystemBase {
    * Calculates PID for both motors with a setpoint of 0 meters and sets the voltage of the motors
    */
   private void retract() {
-    double leftVolts = m_deploymentPIDController.calculate(
+    double leftVolts = m_leftDeploymentPIDController.calculate(
         getLeftDeploymentExtensionMeters(), 0.0);
-    double rightVolts = m_deploymentPIDController.calculate(
+    double rightVolts = m_rightDeploymentPIDController.calculate(
         getRightDeploymentExtensionMeters(), 0.0);
         
     m_leftDeployMotor.setVoltage(leftVolts);
@@ -183,6 +198,9 @@ public class Intake extends SubsystemBase {
   public void stopDeployMotors() {
     m_leftDeployMotor.setVoltage(0.0);
     m_rightDeployMotor.setVoltage(0.0);
+
+    m_leftDeploymentPIDController.reset();
+    m_rightDeploymentPIDController.reset();
   }
 
 

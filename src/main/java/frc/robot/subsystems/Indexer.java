@@ -29,8 +29,11 @@ public class Indexer extends SubsystemBase {
   private RelativeEncoder m_leadEncoder = m_leadIndexMotor.getEncoder();
   private RelativeEncoder m_topRollerEncoder = m_topRollerMotor.getEncoder();
 
-  private final PIDController m_indexPIDController = 
+  private final PIDController m_leadIndexPIDController = 
     new PIDController(IndexerConstants.kIndexP, IndexerConstants.kIndexI, IndexerConstants.kIndexD);
+
+    private final PIDController m_powerCorrectionPIDController = 
+  new PIDController(IndexerConstants.kPowerCorrectionP, IndexerConstants.kPowerCorrectionI, IndexerConstants.kPowerCorrectionD);
 
   private final PIDController m_topRollerPIDController = 
     new PIDController(IndexerConstants.kTopRollerP, IndexerConstants.kTopRollerI, IndexerConstants.kTopRollerD);
@@ -53,26 +56,34 @@ public class Indexer extends SubsystemBase {
   }
 
   public void indexIn() {
-    double volts =
-      m_indexPIDController.calculate(
+    double indexVolts =
+      m_leadIndexPIDController.calculate(
         m_leadEncoder.getVelocity() / 60, IndexerConstants.kIndexVelocitySetpoint); //rpm / 60 = rps
-    m_leadIndexMotor.setVoltage(volts);
+    m_leadIndexMotor.setVoltage(indexVolts);
+
+    double topRollerVolts = 
+      m_topRollerPIDController.calculate(
+        m_topRollerEncoder.getVelocity() / 60, IndexerConstants.kTopRollerVelocitySetpoint); //rpm / 60 = rps
+    m_topRollerMotor.setVoltage(topRollerVolts);
   }
 
   public void indexStop() {
     m_leadIndexMotor.setVoltage(0.0);
+    m_topRollerMotor.setVoltage(0);
   }
 
   public void indexReverse() {
     m_leadIndexMotor.setVoltage(-IndexerConstants.kVoltage);
+    m_topRollerMotor.setVoltage(-IndexerConstants.kVoltage);
   }
 
-  public void topRollerIn() {
-    double volts = 
+/*  public void topRollerIn() {
+    double topRollerVolts = 
       m_topRollerPIDController.calculate(
         m_topRollerEncoder.getVelocity() / 60, IndexerConstants.kTopRollerVelocitySetpoint); //rpm / 60 = rps
-    m_topRollerMotor.setVoltage(volts);
-  }
+    m_topRollerMotor.setVoltage(topRollerVolts);
+  } 
+  
 
   public void topRollerStop() {
     m_topRollerMotor.setVoltage(0);
@@ -81,6 +92,7 @@ public class Indexer extends SubsystemBase {
   public void topRollerReverse() {
     m_topRollerMotor.setVoltage(-IndexerConstants.kVoltage);
   }
+    */
 
   @Override
   public void periodic() {
