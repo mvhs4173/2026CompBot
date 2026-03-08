@@ -9,6 +9,7 @@ import frc.robot.subsystems.DriveBase;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -32,6 +33,8 @@ public class RobotContainer {
   private final Indexer m_indexer = new Indexer();
   private final Shooter m_shooter = new Shooter();
 
+  public final SendableChooser<Command> m_autoChooser = new SendableChooser<Command>();
+
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
@@ -44,6 +47,8 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    m_autoChooser.setDefaultOption("Disable Auto", new InstantCommand());
+
     m_driveBase.setDefaultCommand(new RunCommand(() -> {
       m_driveBase.userDrive(
           m_driverController.getLeftY(),
