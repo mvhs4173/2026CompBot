@@ -4,11 +4,6 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
-import frc.robot.subsystems.DriveBase;
-import frc.robot.subsystems.Indexer;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -16,6 +11,11 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.DriveBase;
+import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -27,17 +27,20 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+
   // The robot's subsystems and commands are defined here...
   private final DriveBase m_driveBase = new DriveBase();
   private final Intake m_intake = new Intake();
   private final Indexer m_indexer = new Indexer();
   private final Shooter m_shooter = new Shooter();
 
-  public final SendableChooser<Command> m_autoChooser = new SendableChooser<Command>();
+  public final SendableChooser<Command> m_autoChooser = new SendableChooser<
+    Command
+  >();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController = new CommandXboxController(
-      OperatorConstants.kDriverControllerPort);
+  private final CommandXboxController m_driverController =
+    new CommandXboxController(OperatorConstants.kDriverControllerPort);
   // private final CommandXboxController m_operatorController = new
   // CommandXboxController(
   // OperatorConstants.kOperatorControllerPort);
@@ -49,14 +52,20 @@ public class RobotContainer {
   public RobotContainer() {
     m_autoChooser.setDefaultOption("Disable Auto", new InstantCommand());
 
-    m_driveBase.setDefaultCommand(new RunCommand(() -> {
-      m_driveBase.userDrive(
-          m_driverController.getLeftY(),
-          m_driverController.getLeftX(),
-          -m_driverController.getRightX(),
-          !m_driverController.leftBumper().getAsBoolean(),
-          m_driverController.rightTrigger().getAsBoolean());
-    }, m_driveBase));
+    m_driveBase.setDefaultCommand(
+      new RunCommand(
+        () -> {
+          m_driveBase.userDrive(
+            m_driverController.getLeftY(),
+            m_driverController.getLeftX(),
+            -m_driverController.getRightX(),
+            !m_driverController.leftBumper().getAsBoolean(),
+            m_driverController.rightTrigger().getAsBoolean()
+          );
+        },
+        m_driveBase
+      )
+    );
 
     // Configure the trigger bindings
     configureBindings();
@@ -77,29 +86,57 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-
-    m_driverController.y().onTrue(new InstantCommand(m_driveBase::resetGyro, m_driveBase));
+    m_driverController
+      .y()
+      .onTrue(new InstantCommand(m_driveBase::resetGyro, m_driveBase));
 
     // Toggle deployed
     // m_operatorController.x().onTrue(new InstantCommand(m_intake::toggleDeploy, m_intake));
 
     // Run the Intake
-    m_operatorController.a().whileTrue(new RunCommand(m_intake::runIntake, m_intake).finallyDo(m_intake::stopIntake));
+    m_operatorController
+      .a()
+      .whileTrue(
+        new RunCommand(m_intake::runIntake, m_intake).finallyDo(
+          m_intake::stopIntake
+        )
+      );
 
     //Flush - Reverse intake, indexer, and shooter
-    m_operatorController.rightBumper()
-        .whileTrue(
-            new ParallelCommandGroup(
-                new RunCommand(m_intake::reverseIntake, m_intake).finallyDo(m_intake::stopIntake),
-                new RunCommand(m_indexer::indexReverse, m_indexer).finallyDo(m_indexer::indexStop),
-                new RunCommand(m_shooter::reverse, m_shooter).finallyDo(m_shooter::stop)));
+    m_operatorController
+      .povUp()
+      .whileTrue(
+        new ParallelCommandGroup(
+          new RunCommand(m_intake::reverseIntake, m_intake).finallyDo(
+            m_intake::stopIntake
+          ),
+          new RunCommand(m_indexer::indexReverse, m_indexer).finallyDo(
+            m_indexer::indexStop
+          ),
+          new RunCommand(m_shooter::reverse, m_shooter).finallyDo(
+            m_shooter::stop
+          )
+        )
+      );
 
-     //Index in
-     m_operatorController.leftBumper().whileTrue(new RunCommand(m_indexer::indexIn).finallyDo(m_indexer::indexStop));
+    //Index in
+    m_operatorController
+      .leftBumper()
+      .whileTrue(
+        new RunCommand(m_indexer::indexBottomIn).finallyDo(m_indexer::indexStop)
+      );
+    m_operatorController
+      .rightBumper()
+      .whileTrue(
+        new RunCommand(m_indexer::indexTopIn).finallyDo(m_indexer::indexStop)
+      );
 
     //Shoot
-    m_operatorController.rightTrigger()
-        .whileTrue(new RunCommand(m_shooter::shoot, m_shooter).finallyDo(m_shooter::stop));
+    m_operatorController
+      .rightTrigger()
+      .whileTrue(
+        new RunCommand(m_shooter::shoot, m_shooter).finallyDo(m_shooter::stop)
+      );
   }
 
   /**
@@ -109,6 +146,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return new InstantCommand();
+    return m_indexer.runBottomSysID();
   }
 }

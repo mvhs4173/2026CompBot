@@ -286,9 +286,9 @@ public class DriveBase extends SubsystemBase implements Sendable {
    * Temporary Mentor code for testing FIXME
    */
   private SwerveModulePosition[] getModulePositions() {
-    return (SwerveModulePosition[]) Arrays.stream(m_modules)
+    return Arrays.stream(m_modules)
       .map(MAXSwerveModule::getPosition)
-      .toArray();
+      .toArray(SwerveModulePosition[]::new);
   }
 
   @Override

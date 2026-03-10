@@ -96,7 +96,7 @@ public class Shooter extends SubsystemBase {
     m_leadShooterMotor.configure(m_leadShooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     m_followShooterConfig
-    .follow(ShooterConstants.kLeadShooterMotorID)
+    .follow(ShooterConstants.kLeadShooterMotorID, true)
     .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
     m_followShooterMotor.configure(m_followShooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -143,8 +143,9 @@ public class Shooter extends SubsystemBase {
   }
 
   public void shoot() {
-    double volts = m_shooterPIDController.calculate(
-      m_shooterEncoder.getVelocity() / 60, ShooterConstants.kShooterVelocitySetpoint); //encoder rpm / 60 = rps
+    // double volts = m_shooterPIDController.calculate(
+      // m_shooterEncoder.getVelocity() / 60, ShooterConstants.kShooterVelocitySetpoint); //encoder rpm / 60 = rps
+      double volts = 4;
     m_leadShooterMotor.setVoltage(volts);
   }
 
@@ -160,6 +161,6 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    // This method will be called onc  per scheduler run
   }
 }

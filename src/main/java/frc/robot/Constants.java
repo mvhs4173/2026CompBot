@@ -112,7 +112,7 @@ public final class Constants {
     public static final double kDeployToleranceMeters = Units.inchesToMeters(1.0); // 1 inch tolerance
 
     public static final double kDeploymentSpeed = 0.2; // % speed
-    public static final double kRunningVolts = 12.0; // Volts
+    public static final double kRunningVolts = 8.0; // Volts
 
     public static final boolean kDeploymentInverted = false;
 
@@ -127,11 +127,11 @@ public final class Constants {
     public static final int kTopRollerMotorID = 55;
 
     //PID values
-    public static final double kIndexP = 12.0 / (48.0 / 5.0); // volts / ((max RPS-ish / 2) / gear ratio (5:1))
+    public static final double kIndexP = 12.0 / (48.0 / 5.0) * 4; // volts / ((max RPS-ish / 2) / gear ratio (5:1))
     public static final double kIndexI = 0;
     public static final double kIndexD = 0;
 
-    public static final double kTopRollerP = 12.0 / (48.0 / 3.0); //volts / ((max RPS-ish / 2) / gear ratio (3:1))
+    public static final double kTopRollerP = 12.0 / (48.0 / 3.0) * 4; //volts / ((max RPS-ish / 2) / gear ratio (3:1))
     public static final double kTopRollerI = 0;
     public static final double kTopRollerD = 0;
 
@@ -144,6 +144,9 @@ public final class Constants {
     public static final double kTopRollerVelocitySetpoint = (48.0 / 3.0); //Same
 
     public static final double kVoltage = 3.0;
+    public static final Velocity<VoltageUnit> kSysIdRampRate = null;
+    public static final Voltage kStepVoltage = null;
+    public static final Time kTimeout = null;
   }
 
   public static class ShooterConstants {
@@ -155,17 +158,16 @@ public final class Constants {
     public static final double kHoodMaximumMechanicalExtension = 0.80; //Percent of extension to safely retract
 
 
-    public static final int kLeadShooterMotorID = 56;
-    public static final int kFollowShooterMotorID = 57;
+    public static final int kLeadShooterMotorID = 57;
+    public static final int kFollowShooterMotorID = 56;
 
     public static final double kMaxRPS = 5676.0 / 60.0; //max RPM of NEO 1650 / 60 for RPS (= to 94.6)
-    public static final double kDesiredShootingSpeedRadians = 0;
 
-    public static final double kP = kMaxRPS / 12.0 * 8; //max speed / 12 volts as an estimate * 10
+    public static final double kP = kMaxRPS / 12.0; //max speed / 12 volts as an estimate * 10
     public static final double kI = 0;
     public static final double kD = 0;
 
-    public static final double kShooterVelocitySetpoint = kMaxRPS; //Setpoint for PID controller //TODO: setpoint calculations
+    public static final double kShooterVelocitySetpoint = 20; //Setpoint for PID controller //TODO: setpoint calculations
 
 
     public static final double kVoltage = 6.0;
