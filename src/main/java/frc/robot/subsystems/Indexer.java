@@ -92,7 +92,7 @@ public class Indexer extends SubsystemBase {
   private final MutVoltage m_appliedTopVoltage = Volts.mutable(0);
   private final MutAngle m_topAngle = Rotations.mutable(0);
   private final MutAngularVelocity m_topVelocity = RPM.mutable(0);
-   private final MutVoltage m_appliedVoltage = Volts.mutable(0);
+  private final MutVoltage m_appliedVoltage = Volts.mutable(0);
   private final MutAngle m_angle = Rotations.mutable(0);
   private final MutAngularVelocity m_velocity = RPM.mutable(0);
 
@@ -158,7 +158,10 @@ public class Indexer extends SubsystemBase {
             )
           )
           .angularVelocity(
-            m_topVelocity.mut_replace(m_topRollerEncoder.getVelocity() / 5.0, RPM)
+            m_topVelocity.mut_replace(
+              m_topRollerEncoder.getVelocity() / 5.0,
+              RPM
+            )
           );
       },
       this,
@@ -233,21 +236,27 @@ public class Indexer extends SubsystemBase {
   }
 
   public void indexBottomIn() {
-    // double indexVolts = m_leadIndexPIDController.calculate(
-    //   (m_leadEncoder.getVelocity() / 5.0) / 60.0,
-    //   IndexerConstants.kIndexVelocitySetpoint
-    // ); //rpm / 60 = rps
-    double indexVolts = 10;
-    m_leadIndexMotor.setVoltage(indexVolts);
+    double ff =
+      IndexerConstants.kBottomMotorVelocitySetpoint /
+      IndexerConstants.kBottomMotorMaxSpeed;
+    double fb = m_leadIndexPIDController.calculate(
+      m_leadEncoder.getVelocity() / 5.0,
+      IndexerConstants.kBottomMotorVelocitySetpoint
+    );
+    double volts = fb + ff;
+    m_leadIndexMotor.setVoltage(volts);
   }
 
   public void indexTopIn() {
-    // double topRollerVolts = m_topRollerPIDController.calculate(
-    //   (m_topRollerEncoder.getVelocity() / 3.0) / 60.0,
-    //   IndexerConstants.kTopRollerVelocitySetpoint
-    // ); //rpm / 60 = rps
-    double topRollerVolts = 10;
-    m_topRollerMotor.setVoltage(topRollerVolts);
+    double ff =
+      IndexerConstants.kTopRollerVelocitySetpoint /
+      IndexerConstants.kTopMotorMaxSpeed;
+    double fb = m_topRollerPIDController.calculate(
+      m_topRollerEncoder.getVelocity() / 5.0,
+      IndexerConstants.kTopRollerVelocitySetpoint
+    );
+    double volts = fb + ff;
+    m_topRollerMotor.setVoltage(volts);
   }
 
   public void indexStop() {
@@ -287,12 +296,13 @@ public class Indexer extends SubsystemBase {
   }
 
   public Command runBottomSysID() {
-  return new SequentialCommandGroup(
+    return new SequentialCommandGroup(
       m_sysIdBottomRoutine.dynamic(Direction.kForward),
       m_sysIdBottomRoutine.dynamic(Direction.kReverse),
       m_sysIdBottomRoutine.quasistatic(Direction.kForward),
       m_sysIdBottomRoutine.quasistatic(Direction.kReverse)
-    );  }
+    );
+  }
 
   @Override
   public void periodic() {
@@ -312,8 +322,6 @@ public class Indexer extends SubsystemBase {
       "BottomIndexCurrent",
       m_leadIndexMotor.getOutputCurrent()
     );
-    SmartDashboard.putData("m_topChooser", m_topSysIDAutoChooser);
-    SmartDashboard.putData("m_bottomChooser", m_bottomSysIDAutoChooser);
     // This method will be called once per scheduler run
   }
 }

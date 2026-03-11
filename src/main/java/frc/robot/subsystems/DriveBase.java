@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -34,10 +35,13 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
@@ -174,7 +178,7 @@ public class DriveBase extends SubsystemBase implements Sendable {
 
   public void applyVolts(Voltage v) {
     for (int i = 0; i < 4; i++) {
-      m_modules[i].setSwerveAngle(new Rotation2d());
+      m_modules[i].setSwerveAngle(Rotation2d.fromDegrees(180));
       m_modules[i].setDriveVoltage(v.in(Volts));
     }
   }
@@ -282,6 +286,15 @@ public class DriveBase extends SubsystemBase implements Sendable {
     m_field.setRobotPose(getPose());
   }
 
+  public Command getSysIDCommand() {
+    return new SequentialCommandGroup(
+      m_sysIdRoutine.dynamic(Direction.kForward),
+      m_sysIdRoutine.dynamic(Direction.kReverse),
+      m_sysIdRoutine.quasistatic(Direction.kForward),
+      m_sysIdRoutine.quasistatic(Direction.kReverse)
+    );
+  }
+
   /*
    * Temporary Mentor code for testing FIXME
    */
@@ -291,9 +304,14 @@ public class DriveBase extends SubsystemBase implements Sendable {
       .toArray(SwerveModulePosition[]::new);
   }
 
+  public void zeroTurnEncoders() {
+    Arrays.stream(m_modules).forEach(null);
+  }
+
   @Override
   public void periodic() {
     SmartDashboard.putData("Field", m_field);
+    SmartDashboard.putData("DriveBase", this);
   }
 
   public Pose2d getPose() {

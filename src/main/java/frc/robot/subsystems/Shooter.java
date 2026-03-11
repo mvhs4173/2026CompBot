@@ -4,42 +4,46 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkMax;
-
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 //import java.io.ObjectInputFilter.Config;
 
 import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.MutAngle;
+import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.ShooterConstants;
 
-
-
 public class Shooter extends SubsystemBase {
 
   private class Hood {
+
     private final Servo m_leftHoodServo;
     private final Servo m_rightHoodServo;
 
@@ -48,35 +52,48 @@ public class Shooter extends SubsystemBase {
       m_rightHoodServo = new Servo(rightChannel);
     }
 
-    /**Clamps the angle to the max + min values, 
+    /**Clamps the angle to the max + min values,
      * Calculates percentage to set servos to
-     * 
+     *
      * @param angle The angle to set the hood to
      */
     public void set(Rotation2d angle) {
       angle = Rotation2d.fromDegrees(
         MathUtil.clamp(
-          angle.getDegrees(), 
-          ShooterConstants.kHoodMinimumAngle.getDegrees(), 
-          ShooterConstants.kHoodMaximumAngle.getDegrees()));
-      double percent = 
-        (angle.minus(ShooterConstants.kHoodMinimumAngle)).getRadians()
-         / (ShooterConstants.kHoodMaximumAngle.minus(ShooterConstants.kHoodMinimumAngle).getRadians());
+          angle.getDegrees(),
+          ShooterConstants.kHoodMinimumAngle.getDegrees(),
+          ShooterConstants.kHoodMaximumAngle.getDegrees()
+        )
+      );
+      double percent =
+        (angle.minus(ShooterConstants.kHoodMinimumAngle)).getRadians() /
+        (ShooterConstants.kHoodMaximumAngle
+            .minus(ShooterConstants.kHoodMinimumAngle)
+            .getRadians());
       m_leftHoodServo.set(percent);
       m_rightHoodServo.set(percent);
     }
   }
 
-  private final SparkMax m_leadShooterMotor = new SparkMax(ShooterConstants.kLeadShooterMotorID, MotorType.kBrushless);
-  private final SparkMax m_followShooterMotor = new SparkMax(ShooterConstants.kFollowShooterMotorID, MotorType.kBrushless);
+  private final SparkMax m_leadShooterMotor = new SparkMax(
+    ShooterConstants.kLeadShooterMotorID,
+    MotorType.kBrushless
+  );
+  private final SparkMax m_followShooterMotor = new SparkMax(
+    ShooterConstants.kFollowShooterMotorID,
+    MotorType.kBrushless
+  );
 
   private SparkMaxConfig m_leadShooterConfig = new SparkMaxConfig();
   private SparkMaxConfig m_followShooterConfig = new SparkMaxConfig();
 
-  private final RelativeEncoder m_shooterEncoder = m_leadShooterMotor.getEncoder();
+  private RelativeEncoder m_shooterEncoder;
 
-  private final PIDController m_shooterPIDController = 
-      new PIDController(ShooterConstants.kP, ShooterConstants.kI, ShooterConstants.kD);
+  private final PIDController m_shooterPIDController = new PIDController(
+    ShooterConstants.kP,
+    ShooterConstants.kI,
+    ShooterConstants.kD
+  );
 
   private final Hood m_hood;
 
@@ -85,67 +102,86 @@ public class Shooter extends SubsystemBase {
   private SysIdRoutine m_sysIdRoutine;
 
   private final MutVoltage m_appliedVoltage = Volts.mutable(0);
-  private final MutDistance m_distance = Meters.mutable(0);
-  private final MutLinearVelocity m_velocity = MetersPerSecond.mutable(0);
-
+  private final MutAngle m_angle = Rotations.mutable(0);
+  private final MutAngularVelocity m_velocity = RPM.mutable(0);
 
   /** Creates a new Shooter. */
   public Shooter() {
     m_leadShooterConfig
-    .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
-    m_leadShooterMotor.configure(m_leadShooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+      .inverted(false)
+      .smartCurrentLimit(40)
+      .idleMode(IdleMode.kCoast);
+    m_leadShooterMotor.configure(
+      m_leadShooterConfig,
+      ResetMode.kResetSafeParameters,
+      PersistMode.kPersistParameters
+    );
 
     m_followShooterConfig
-    .follow(ShooterConstants.kLeadShooterMotorID, true)
-    .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
-    m_followShooterMotor.configure(m_followShooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+      .follow(ShooterConstants.kLeadShooterMotorID, true)
+      .inverted(false)
+      .smartCurrentLimit(40)
+      .idleMode(IdleMode.kCoast);
+    m_followShooterMotor.configure(
+      m_followShooterConfig,
+      ResetMode.kResetSafeParameters,
+      PersistMode.kPersistParameters
+    );
 
-    m_hood = new Hood(ShooterConstants.kLeftHoodServoChannel, ShooterConstants.kRightHoodServoChannel);
+    m_shooterEncoder = m_leadShooterMotor.getEncoder();
 
-  //  m_sysIdConfig = new Config(ShooterConstants.kSysIdRampRate, ShooterConstants.kStepVoltage,
-  //       ShooterConstants.kTimeout);
+    m_hood = new Hood(
+      ShooterConstants.kLeftHoodServoChannel,
+      ShooterConstants.kRightHoodServoChannel
+    );
 
-  //       m_sysIdMechanism = new Mechanism(this::applyVolts, log -> {
-  //     log.motor("Lead shoot (Left)")
-  //         .voltage(
-  //             m_appliedVoltage.mut_replace(
-  //                 m_leadShooterMotor.get, Volts))
-  //         .linearPosition(m_distance.mut_replace(m_leadShooterMotor.getDistanceMeters(),
-  //             Meters))
-  //         .linearVelocity(
-  //             m_velocity.mut_replace(
-  //                 m_leadShooterMotor.getSpeedMetersPerSecond(),
-  //                 MetersPerSecond));
-  //     log.motor("Follow Shoot (Right)")
-  //         .voltage(
-  //             m_appliedVoltage.mut_replace(
-  //                 m_followShooterMotor.getVoltage(), Volts))
-  //         .linearPosition(m_distance.mut_replace(m_followShooterMotor.getDistanceMeters(),
-  //             Meters))
-  //         .linearVelocity(
-  //             m_velocity.mut_replace(
-  //                 m_followShooterMotor.getSpeedMetersPerSecond(),
-  //                 MetersPerSecond));
-  //   }, this, "sysIdRoutine");
+    m_sysIdConfig = new Config(
+      ShooterConstants.kSysIdRampRate,
+      ShooterConstants.kStepVoltage,
+      ShooterConstants.kTimeout
+    );
 
-  //   m_sysIdRoutine = new SysIdRoutine(m_sysIdConfig, m_sysIdMechanism);
+    m_sysIdMechanism = new Mechanism(
+      this::applyVolts,
+      log -> {
+        log
+          .motor("Lead shoot (Left)")
+          .voltage(
+            m_appliedVoltage.mut_replace(
+              m_leadShooterMotor.get() * m_leadShooterMotor.getBusVoltage(),
+              Volts
+            )
+          )
+          .angularPosition(
+            m_angle.mut_replace(m_shooterEncoder.getPosition(), Rotations)
+          )
+          .angularVelocity(
+            m_velocity.mut_replace(m_shooterEncoder.getVelocity(), RPM)
+          );
+      },
+      this,
+      "sysIdRoutine"
+    );
+
+    m_sysIdRoutine = new SysIdRoutine(m_sysIdConfig, m_sysIdMechanism);
   }
 
   public void applyVolts(Voltage v) {
     m_leadShooterMotor.setVoltage(v);
-    m_followShooterMotor.setVoltage(v);
   }
-
-
 
   public void setHoodAngle(Rotation2d angle) {
     m_hood.set(angle);
   }
 
   public void shoot() {
-    // double volts = m_shooterPIDController.calculate(
-      // m_shooterEncoder.getVelocity() / 60, ShooterConstants.kShooterVelocitySetpoint); //encoder rpm / 60 = rps
-      double volts = 4;
+    double ff =
+      ShooterConstants.kShooterVelocitySetpoint / ShooterConstants.kMaxSpeed;
+    double fb = m_shooterPIDController.calculate(
+      m_shooterEncoder.getVelocity(),
+      ShooterConstants.kShooterVelocitySetpoint
+    ); //encoder rpm / 60 = rps
+    double volts = fb + ff;
     m_leadShooterMotor.setVoltage(volts);
   }
 
@@ -157,6 +193,15 @@ public class Shooter extends SubsystemBase {
 
   public void reverse() {
     m_leadShooterMotor.setVoltage(-Constants.ShooterConstants.kVoltage);
+  }
+
+  public Command getSysIDCommand() {
+    return new SequentialCommandGroup(
+      m_sysIdRoutine.dynamic(Direction.kForward),
+      m_sysIdRoutine.dynamic(Direction.kReverse),
+      m_sysIdRoutine.quasistatic(Direction.kForward),
+      m_sysIdRoutine.quasistatic(Direction.kReverse)
+    );
   }
 
   @Override

@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -51,6 +52,10 @@ public class RobotContainer {
    */
   public RobotContainer() {
     m_autoChooser.setDefaultOption("Disable Auto", new InstantCommand());
+    m_autoChooser.addOption("TopRollerSysID", m_indexer.runTopSysID());
+    m_autoChooser.addOption("BottomRollerSysID", m_indexer.runBottomSysID());
+    m_autoChooser.addOption("DriveSysID", m_driveBase.getSysIDCommand());
+    m_autoChooser.addOption("ShooterSysID", m_shooter.getSysIDCommand());
 
     m_driveBase.setDefaultCommand(
       new RunCommand(
@@ -69,6 +74,7 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     configureBindings();
+    SmartDashboard.putData("Autos", m_autoChooser);
   }
 
   /**
@@ -146,6 +152,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return m_indexer.runBottomSysID();
+    return m_autoChooser.getSelected();
   }
 }

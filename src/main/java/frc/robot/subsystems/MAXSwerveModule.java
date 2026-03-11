@@ -14,10 +14,9 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkMax;
-
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -29,6 +28,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
 
 public class MAXSwerveModule implements Sendable {
+
   private final TalonFX m_drivingTalon;
   private final SparkMax m_turningSpark;
 
@@ -42,8 +42,11 @@ public class MAXSwerveModule implements Sendable {
 
   private boolean m_driveInverted;
 
-  private double m_chassisAngularOffset = 0;
-  private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
+  private Rotation2d m_offsetAngle;
+  private SwerveModuleState m_desiredState = new SwerveModuleState(
+    0.0,
+    new Rotation2d()
+  );
 
   /**
    * Constructs a MAXSwerveModule and configures the driving and turning motor,
@@ -55,9 +58,16 @@ public class MAXSwerveModule implements Sendable {
     m_drivingTalon = new TalonFX(module.driveID);
     m_turningSpark = new SparkMax(module.turnID, MotorType.kBrushless);
 
-    m_turningSparkConfig.smartCurrentLimit(20).inverted(false).idleMode(IdleMode.kBrake);
+    m_turningSparkConfig
+      .smartCurrentLimit(20)
+      .inverted(false)
+      .idleMode(IdleMode.kBrake);
 
-    m_turningSpark.configure(m_turningSparkConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_turningSpark.configure(
+      m_turningSparkConfig,
+      ResetMode.kResetSafeParameters,
+      PersistMode.kPersistParameters
+    );
 
     m_turningEncoder = m_turningSpark.getAbsoluteEncoder();
 
@@ -71,12 +81,12 @@ public class MAXSwerveModule implements Sendable {
 
     // set slot 0 gains
     var slot0Configs = talonFXConfigs.Slot0;
-    slot0Configs.kS = 0.0;// 0.25 // Add 0.25 V output to overcome static friction
-    slot0Configs.kV = 0.0;// 0.12 // A velocity target of 1 rps results in 0.12 V output
-    slot0Configs.kA = 0.0;// 0.01 // An acceleration of 1 rps/s requires 0.01 V output
-    slot0Configs.kP = 48.0;// 4.8 // A position error of 2.5 rotations results in 12 V output
-    slot0Configs.kI = 0.0;// 0 // no output for integrated error
-    slot0Configs.kD = 0.0;// 0.1 // A velocity error of 1 rps results in 0.1 V output
+    slot0Configs.kS = 0.0; // 0.25 // Add 0.25 V output to overcome static friction
+    slot0Configs.kV = 0.0; // 0.12 // A velocity target of 1 rps results in 0.12 V output
+    slot0Configs.kA = 0.0; // 0.01 // An acceleration of 1 rps/s requires 0.01 V output
+    slot0Configs.kP = 48.0; // 4.8 // A position error of 2.5 rotations results in 12 V output
+    slot0Configs.kI = 0.0; // 0 // no output for integrated error
+    slot0Configs.kD = 0.0; // 0.1 // A velocity error of 1 rps results in 0.1 V output
 
     m_drivingTalon.getConfigurator().apply(talonFXConfigs);
 
@@ -84,11 +94,13 @@ public class MAXSwerveModule implements Sendable {
     // applying the configuration to bring the SPARK to a known good state. Persist
     // the settings to the SPARK to avoid losing them on a power cycle.
     // m_drivingTalon
-    m_turningSpark.configure(Configs.MAXSwerveModule.turningConfig,
-        ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
+    m_turningSpark.configure(
+      Configs.MAXSwerveModule.turningConfig,
+      ResetMode.kResetSafeParameters,
+      PersistMode.kPersistParameters
+    );
 
-    m_chassisAngularOffset = 0;
+    m_offsetAngle = module.offsetAngle;
     m_desiredState.angle = new Rotation2d(m_turningEncoder.getPosition());
     m_drivingTalon.setPosition(0.0);
   }
@@ -107,7 +119,10 @@ public class MAXSwerveModule implements Sendable {
   public SwerveModuleState getState() {
     // Apply chassis angular offset to the encoder position to get the position
     // relative to the chassis.
-    return new SwerveModuleState(getWheelVelocity(), Rotation2d.fromDegrees(getWheelAngle()));
+    return new SwerveModuleState(
+      getWheelVelocity(),
+      Rotation2d.fromDegrees(getWheelAngle())
+    );
   }
 
   public double getWheelVelocity() {
@@ -115,7 +130,9 @@ public class MAXSwerveModule implements Sendable {
   }
 
   public double getWheelAngle() {
-    return Units.radiansToDegrees(m_turningEncoder.getPosition() - m_chassisAngularOffset);
+    return Units.radiansToDegrees(
+      m_turningEncoder.getPosition() - m_offsetAngle.getRadians()
+    );
   }
 
   /**
@@ -127,8 +144,11 @@ public class MAXSwerveModule implements Sendable {
     // Apply chassis angular offset to the encoder position to get the position
     // relative to the chassis.
     return new SwerveModulePosition(
-        m_drivingTalon.getRotorPosition().getValueAsDouble(),
-        new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
+      m_drivingTalon.getRotorPosition().getValueAsDouble(),
+      new Rotation2d(
+        m_turningEncoder.getPosition() - m_offsetAngle.getRadians()
+      )
+    );
   }
 
   /**
@@ -139,11 +159,14 @@ public class MAXSwerveModule implements Sendable {
   public void setDesiredState(SwerveModuleState desiredState) {
     // Apply chassis angular offset to the desired state.
     SwerveModuleState correctedDesiredState = new SwerveModuleState();
-    correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
-    correctedDesiredState.angle = desiredState.angle.plus(Rotation2d.fromRadians(m_chassisAngularOffset));
+    correctedDesiredState.speedMetersPerSecond =
+      desiredState.speedMetersPerSecond;
+    correctedDesiredState.angle = desiredState.angle.plus(m_offsetAngle);
 
     // Optimize the reference state to avoid spinning further than 90 degrees.
-    correctedDesiredState.optimize(new Rotation2d(m_turningEncoder.getPosition()));
+    correctedDesiredState.optimize(
+      new Rotation2d(m_turningEncoder.getPosition())
+    );
 
     // Command driving and turning SPARKS towards their respective setpoints.
     PositionVoltage driveOutput = new PositionVoltage(0);
@@ -152,17 +175,30 @@ public class MAXSwerveModule implements Sendable {
 
     // m_drivingTalon.setControl(driveOutput);
 
-    m_drivingTalon.setControl(new VoltageOut((correctedDesiredState.speedMetersPerSecond /
-        Constants.DrivetrainConstants.maxSpeed) *
-        (m_driveInverted ? -12 : 12)));// % speed * volts
-    m_turningClosedLoopController.setSetpoint(correctedDesiredState.angle.getRadians(), ControlType.kPosition);
+    m_drivingTalon.setControl(
+      new VoltageOut(
+        (correctedDesiredState.speedMetersPerSecond /
+          Constants.DrivetrainConstants.maxSpeed) *
+        (m_driveInverted ? -12 : 12)
+      )
+    ); // % speed * volts
+    m_turningClosedLoopController.setSetpoint(
+      correctedDesiredState.angle.getRadians(),
+      ControlType.kPosition
+    );
 
     m_desiredState = desiredState;
   }
 
   public void setSwerveAngle(Rotation2d angle) {
-    m_turningClosedLoopController.setSetpoint(angle.plus(Rotation2d.fromRadians(m_chassisAngularOffset)).getRadians(),
-        ControlType.kPosition);
+    m_turningClosedLoopController.setSetpoint(
+      angle.getRadians(),
+      ControlType.kPosition
+    );
+  }
+
+  public void zeroTurnEncoders() {
+  
   }
 
   public void setDriveVoltage(double volts) {
@@ -174,18 +210,26 @@ public class MAXSwerveModule implements Sendable {
   }
 
   public double getDistanceMeters() {
-    return Units.inchesToMeters(m_drivingTalon.getRotorPosition().getValueAsDouble() / 4.71 * 3 * Math.PI); // 3 inch
-                                                                                                            // wheel
-                                                                                                            // diameter,
-                                                                                                            // 4.71 : 1
-                                                                                                            // gear
-                                                                                                            // ratio
+    return Units.inchesToMeters(
+      (m_drivingTalon.getRotorPosition().getValueAsDouble() / 4.71) *
+      3 *
+      Math.PI
+    ); // 3 inch
+    // wheel
+    // diameter,
+    // 4.71 : 1
+    // gear
+    // ratio
   }
 
   public double getSpeedMetersPerSecond() {
-    return Units.inchesToMeters(m_drivingTalon.getRotorVelocity().getValueAsDouble() / 4.71 * 3 * Math.PI); // 4.71 : 1
-                                                                                                            // gear
-                                                                                                            // ratio
+    return Units.inchesToMeters(
+      (m_drivingTalon.getRotorVelocity().getValueAsDouble() / 4.71) *
+      3 *
+      Math.PI
+    ); // 4.71 : 1
+    // gear
+    // ratio
   }
 
   /** Zeroes all the SwerveModule encoders. */
@@ -196,7 +240,7 @@ public class MAXSwerveModule implements Sendable {
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("SwerveModule");
-    builder.addDoubleProperty("angle", this::getWheelAngle,null);
+    builder.addDoubleProperty("angle", this::getWheelAngle, null);
     builder.addDoubleProperty("speed", this::getWheelVelocity, null);
   }
 }
