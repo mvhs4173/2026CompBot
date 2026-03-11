@@ -222,6 +222,10 @@ public final class Constants {
     public static final double kI = 0;
     public static final double kD = 0;
 
+    public static final double kS = 0;
+    public static final double kV = 0;
+    public static final double kA = 0;
+
     public static final double kShooterVelocitySetpoint = 1200; //Setpoint for PID controller //TODO: setpoint calculations
 
     public static final double kVoltage = 6.0;
