@@ -97,7 +97,7 @@ public class RobotContainer {
       .onTrue(new InstantCommand(m_driveBase::resetGyro, m_driveBase));
 
     // Toggle deployed
-    // m_operatorController.x().onTrue(new InstantCommand(m_intake::toggleDeploy, m_intake));
+    m_operatorController.x().onTrue(new InstantCommand(m_intake::toggleDeploy, m_intake));
 
     // Run the Intake
     m_operatorController

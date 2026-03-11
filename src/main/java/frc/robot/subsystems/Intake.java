@@ -4,20 +4,19 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.EncoderConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
-
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.ResetMode;
-
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.EncoderConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,15 +27,24 @@ import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 
 public class Intake extends SubsystemBase {
-  private final SparkMax m_leftDeployMotor = new SparkMax(Constants.IntakeConstants.kLeadIntakeDeploymentID,
-      MotorType.kBrushless);
-  private final SparkMax m_rightDeployMotor = new SparkMax(Constants.IntakeConstants.kFollowIntakeDeploymentID,
-      MotorType.kBrushless);
-  private final SparkMax m_runningMotor = new SparkMax(IntakeConstants.kIntakeRunningID,
-      MotorType.kBrushless);
 
-  private final RelativeEncoder m_leftDeployEncoder = m_leftDeployMotor.getEncoder();
-  private final RelativeEncoder m_rightDeployEncoder = m_rightDeployMotor.getEncoder();
+  private final SparkMax m_leftDeployMotor = new SparkMax(
+    Constants.IntakeConstants.kLeadIntakeDeploymentID,
+    MotorType.kBrushless
+  );
+  private final SparkMax m_rightDeployMotor = new SparkMax(
+    Constants.IntakeConstants.kFollowIntakeDeploymentID,
+    MotorType.kBrushless
+  );
+  private final SparkMax m_runningMotor = new SparkMax(
+    IntakeConstants.kIntakeRunningID,
+    MotorType.kBrushless
+  );
+
+  private final RelativeEncoder m_leftDeployEncoder =
+    m_leftDeployMotor.getEncoder();
+  private final RelativeEncoder m_rightDeployEncoder =
+    m_rightDeployMotor.getEncoder();
 
   private SparkMaxConfig m_leftDeployConfig = new SparkMaxConfig();
   private SparkMaxConfig m_rightDeployConfig = new SparkMaxConfig();
@@ -46,11 +54,21 @@ public class Intake extends SubsystemBase {
   private EncoderConfig m_rightDeployEncoderConfig = new EncoderConfig();
 
   private PIDController m_leftDeploymentPIDController = new PIDController(
-      IntakeConstants.kDeployP, IntakeConstants.kDeployI, IntakeConstants.kDeployD);
+    IntakeConstants.kDeployP,
+    IntakeConstants.kDeployI,
+    IntakeConstants.kDeployD
+  );
   private PIDController m_rightDeploymentPIDController = new PIDController(
-      IntakeConstants.kDeployP, IntakeConstants.kDeployI, IntakeConstants.kDeployD);
-  private SimpleMotorFeedforward m_deploymentFFController = new SimpleMotorFeedforward(
-      IntakeConstants.kDeployS, IntakeConstants.kDeployV, IntakeConstants.kDeployA);
+    IntakeConstants.kDeployP,
+    IntakeConstants.kDeployI,
+    IntakeConstants.kDeployD
+  );
+  private SimpleMotorFeedforward m_deploymentFFController =
+    new SimpleMotorFeedforward(
+      IntakeConstants.kDeployS,
+      IntakeConstants.kDeployV,
+      IntakeConstants.kDeployA
+    );
 
   //private final DigitalInput m_deployedLimitSwitch = new DigitalInput(
   //    IntakeConstants.kDeployedLimitSwitchPort);
@@ -62,27 +80,53 @@ public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   public Intake() {
     m_leftDeployConfig
-    .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
-    m_leftDeployMotor.configure(m_rightDeployConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+      .inverted(false)
+      .smartCurrentLimit(40)
+      .idleMode(IdleMode.kCoast);
+    m_leftDeployMotor.configure(
+      m_rightDeployConfig,
+      ResetMode.kResetSafeParameters,
+      PersistMode.kPersistParameters
+    );
 
     m_leftDeployEncoderConfig
-      .positionConversionFactor(IntakeConstants.kRotationsToMeters * IntakeConstants.kGearRatio)
+      .positionConversionFactor(
+        IntakeConstants.kRotationsToMeters * IntakeConstants.kGearRatio
+      )
       .inverted(IntakeConstants.kLeftDeployEncoderInverted);
 
     m_rightDeployConfig //.follow(IntakeConstants.kLeadIntakeDeploymentID)
-    .inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kCoast);
-    m_rightDeployMotor.configure(m_rightDeployConfig, com.revrobotics.ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
- 
+      .inverted(false)
+      .smartCurrentLimit(40)
+      .idleMode(IdleMode.kCoast);
+    m_rightDeployMotor.configure(
+      m_rightDeployConfig,
+      com.revrobotics.ResetMode.kNoResetSafeParameters,
+      PersistMode.kPersistParameters
+    );
+
     m_rightDeployEncoderConfig
-      .positionConversionFactor(IntakeConstants.kRotationsToMeters * IntakeConstants.kGearRatio)
+      .positionConversionFactor(
+        IntakeConstants.kRotationsToMeters * IntakeConstants.kGearRatio
+      )
       .inverted(IntakeConstants.kRightDeployEncoderInverted);
 
-    m_runningConfig.inverted(false).smartCurrentLimit(40).idleMode(IdleMode.kBrake);
-    m_runningMotor.configure(m_runningConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_runningConfig
+      .inverted(false)
+      .smartCurrentLimit(40)
+      .idleMode(IdleMode.kBrake);
+    m_runningMotor.configure(
+      m_runningConfig,
+      ResetMode.kResetSafeParameters,
+      PersistMode.kPersistParameters
+    );
 
-    m_leftDeploymentPIDController.setTolerance(IntakeConstants.kDeployToleranceMeters);
-    m_rightDeploymentPIDController.setTolerance(IntakeConstants.kDeployToleranceMeters);
-
+    m_leftDeploymentPIDController.setTolerance(
+      IntakeConstants.kDeployToleranceMeters
+    );
+    m_rightDeploymentPIDController.setTolerance(
+      IntakeConstants.kDeployToleranceMeters
+    );
   }
 
   // Running
@@ -132,9 +176,14 @@ public class Intake extends SubsystemBase {
    *   or the extension - the distance for deployment is less than a certain tolerance. False if neither
    */
   private boolean isDeployed() {
-    return m_deploymentStatus = // m_deployedLimitSwitch.get() || 
-      Math.abs(getLeftDeploymentExtensionMeters()
-            - IntakeConstants.kDeployDistanceMeters) < IntakeConstants.kDeployToleranceMeters;
+    return (
+      m_deploymentStatus = // m_deployedLimitSwitch.get() ||
+        Math.abs(
+          getLeftDeploymentExtensionMeters() -
+          IntakeConstants.kDeployDistanceMeters
+        ) <
+        IntakeConstants.kDeployToleranceMeters
+    );
   }
 
   /**
@@ -142,10 +191,12 @@ public class Intake extends SubsystemBase {
    * @return True if either the retracted limit switch is true or the extension is less than a certain tolerance. False if neither
    */
   private boolean isRetracted() {
-    return m_deploymentStatus =// m_retractedLimitSwitch.get() ||
-     Math.abs(getLeftDeploymentExtensionMeters()) < IntakeConstants.kDeployToleranceMeters;
+    return (
+      m_deploymentStatus = // m_retractedLimitSwitch.get() ||
+        Math.abs(getLeftDeploymentExtensionMeters()) <
+        IntakeConstants.kDeployToleranceMeters
+    );
   }
-
 
   /**
    * Schedules either the getDeployCommand or the getRetractCommand
@@ -171,9 +222,13 @@ public class Intake extends SubsystemBase {
    */
   private void deploy() {
     double leftVolts = m_leftDeploymentPIDController.calculate(
-        getLeftDeploymentExtensionMeters(), IntakeConstants.kDeployDistanceMeters);
+      getLeftDeploymentExtensionMeters(),
+      IntakeConstants.kDeployDistanceMeters
+    );
     double rightVolts = m_rightDeploymentPIDController.calculate(
-        getRightDeploymentExtensionMeters(), IntakeConstants.kDeployDistanceMeters);
+      getRightDeploymentExtensionMeters(),
+      IntakeConstants.kDeployDistanceMeters
+    );
 
     m_leftDeployMotor.setVoltage(leftVolts);
     m_rightDeployMotor.setVoltage(rightVolts);
@@ -184,10 +239,14 @@ public class Intake extends SubsystemBase {
    */
   private void retract() {
     double leftVolts = m_leftDeploymentPIDController.calculate(
-        getLeftDeploymentExtensionMeters(), 0.0);
+      getLeftDeploymentExtensionMeters(),
+      0.0
+    );
     double rightVolts = m_rightDeploymentPIDController.calculate(
-        getRightDeploymentExtensionMeters(), 0.0);
-        
+      getRightDeploymentExtensionMeters(),
+      0.0
+    );
+
     m_leftDeployMotor.setVoltage(leftVolts);
     m_rightDeployMotor.setVoltage(rightVolts);
   }
@@ -203,24 +262,24 @@ public class Intake extends SubsystemBase {
     m_rightDeploymentPIDController.reset();
   }
 
-
   private Command getDeployCommand() {
     return new RunCommand(this::deploy, this)
-        .until(this::isDeployed)
-        .finallyDo(this::stopDeployMotors);
+      .until(this::isDeployed)
+      .finallyDo(this::stopDeployMotors);
   }
 
   private Command getRetractCommand() {
     return new RunCommand(this::retract, this)
-        .until(this::isRetracted)
-        .finallyDo(this::stopDeployMotors);
+      .until(this::isRetracted)
+      .finallyDo(this::stopDeployMotors);
   }
-
-  
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("Intake Deployment Extension Meters", getLeftDeploymentExtensionMeters());
+    SmartDashboard.putNumber(
+      "Intake Deployment Extension Inches",
+      Units.metersToInches(getLeftDeploymentExtensionMeters())
+    );
   }
 }

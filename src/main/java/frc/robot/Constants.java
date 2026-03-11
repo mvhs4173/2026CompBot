@@ -5,6 +5,9 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Rotation;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -46,9 +49,11 @@ public final class Constants {
 
     public static final boolean kUsePigeon = false;
 
-    public static final Velocity<VoltageUnit> kSysIdRampRate = null;
-    public static final Voltage kStepVoltage = null;
-    public static final Time kTimeout = null;
+    public static final Velocity<VoltageUnit> kSysIdRampRate = Volts.of(2).per(
+      Second
+    );
+    public static final Voltage kStepVoltage = Volts.of(7);
+    public static final Time kTimeout = Seconds.of(5);
 
     public static final int pigeonID = 2;
 
@@ -169,11 +174,11 @@ public final class Constants {
     public static final int kTopRollerMotorID = 55;
 
     //PID values
-    public static final double kIndexP = 20;
+    public static final double kIndexP = 0.5;
     public static final double kIndexI = 0;
     public static final double kIndexD = 0;
 
-    public static final double kTopRollerP = 20;
+    public static final double kTopRollerP = 0.5;
     public static final double kTopRollerI = 0;
     public static final double kTopRollerD = 0;
 
@@ -218,19 +223,24 @@ public final class Constants {
 
     public static final double kMaxSpeed = 5676.0;
 
-    public static final double kP = 0.5;
-    public static final double kI = 0;
-    public static final double kD = 0;
+    public static final double kP = 0.039904;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kS = 0.086855;
+    public static final double kV = 0.12862;
+    public static final double kA = 0.037593;
 
-    public static final double kShooterVelocitySetpoint = 1200; //Setpoint for PID controller //TODO: setpoint calculations
+    public static final double kShooterVelocitySetpoint = 4000; //Setpoint for PID controller //TODO: setpoint calculations
 
     public static final double kVoltage = 6.0;
 
     //Sysid shtuff
 
-    public static final Velocity<VoltageUnit> kSysIdRampRate = null;
-    public static final Voltage kStepVoltage = null;
-    public static final Time kTimeout = null;
+    public static final Velocity<VoltageUnit> kSysIdRampRate = Volts.of(1).per(
+      Second
+    );
+    public static final Voltage kStepVoltage = Volts.of(8.5);
+    public static final Time kTimeout = Time.ofBaseUnits(20, Seconds);
   }
 
   public static class AutoConstants {}

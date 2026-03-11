@@ -21,6 +21,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutAngularVelocity;
@@ -96,6 +97,13 @@ public class Shooter extends SubsystemBase {
     ShooterConstants.kD
   );
 
+  private final SimpleMotorFeedforward m_shooterFFController =
+    new SimpleMotorFeedforward(
+      ShooterConstants.kS,
+      ShooterConstants.kV,
+      ShooterConstants.kA
+    );
+
   private final Hood m_hood;
 
   private Config m_sysIdConfig;
@@ -149,7 +157,8 @@ public class Shooter extends SubsystemBase {
           .motor("Lead shoot (Left)")
           .voltage(
             m_appliedVoltage.mut_replace(
-              m_leadShooterMotor.get() * m_leadShooterMotor.getBusVoltage(),
+              m_leadShooterMotor.getAppliedOutput() *
+              m_leadShooterMotor.getBusVoltage(),
               Volts
             )
           )
@@ -176,13 +185,14 @@ public class Shooter extends SubsystemBase {
   }
 
   public void shoot() {
-    double ff =
-      ShooterConstants.kShooterVelocitySetpoint / ShooterConstants.kMaxSpeed;
+    double ff = m_shooterFFController.calculate(
+      ShooterConstants.kShooterVelocitySetpoint
+    );
     double fb = m_shooterPIDController.calculate(
       m_shooterEncoder.getVelocity(),
       ShooterConstants.kShooterVelocitySetpoint
     ); //encoder rpm / 60 = rps
-    double volts = ff;
+    double volts = ff + fb;
     m_leadShooterMotor.setVoltage(volts);
   }
 
