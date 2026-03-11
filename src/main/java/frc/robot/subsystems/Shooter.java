@@ -32,6 +32,8 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -210,6 +212,16 @@ public class Shooter extends SubsystemBase {
       m_sysIdRoutine.quasistatic(Direction.kForward),
       m_sysIdRoutine.quasistatic(Direction.kReverse)
     );
+  }
+
+  public Command getSetHoodCommand(Rotation2d angle) {
+    return new InstantCommand(() -> {setHoodAngle(angle);}, this);
+  }
+
+  public Command getShootCommand(double time) {
+    return new RunCommand(this::shoot, this)
+      .withTimeout(time)
+      .finallyDo(this::stop);
   }
 
   @Override

@@ -204,16 +204,22 @@ public class Intake extends SubsystemBase {
   }
 
 
-  private Command getDeployCommand() {
+  public Command getDeployCommand() {
     return new RunCommand(this::deploy, this)
         .until(this::isDeployed)
         .finallyDo(this::stopDeployMotors);
   }
 
-  private Command getRetractCommand() {
+  public Command getRetractCommand() {
     return new RunCommand(this::retract, this)
         .until(this::isRetracted)
         .finallyDo(this::stopDeployMotors);
+  }
+
+  public Command getIntakeCommand(double time) {
+    return new RunCommand(this::runIntake, this)
+        .withTimeout(time)
+        .finallyDo(this::stopIntake);
   }
 
   
