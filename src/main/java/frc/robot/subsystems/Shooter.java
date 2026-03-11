@@ -21,6 +21,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutAngularVelocity;
@@ -96,7 +97,7 @@ public class Shooter extends SubsystemBase {
     ShooterConstants.kD
   );
 
-  private final SimpleFeedForwardController m_shooterFFController = new SimpleFeedForwardController(
+  private final SimpleMotorFeedforward m_shooterFFController = new SimpleMotorFeedforward(
     ShooterConstants.kS,
     ShooterConstants.kV,
     ShooterConstants.kA
