@@ -18,6 +18,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutDistance;
@@ -80,6 +81,9 @@ public class Indexer extends SubsystemBase {
     IndexerConstants.kTopRollerI,
     IndexerConstants.kTopRollerD
   );
+
+  private SimpleMotorFeedforward m_topFF = new SimpleMotorFeedforward(IndexerConstants.kTopS, 0, 0);
+  private SimpleMotorFeedforward m_bottomFF = new SimpleMotorFeedforward(0, 0, 0);
 
   private Config m_sysIdTopConfig;
   private Mechanism m_sysIdTopMechanism;

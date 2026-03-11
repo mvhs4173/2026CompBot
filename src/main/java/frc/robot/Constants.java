@@ -191,6 +191,13 @@ public final class Constants {
     public static final Velocity<VoltageUnit> kSysIdRampRate = null;
     public static final Voltage kStepVoltage = null;
     public static final Time kTimeout = null;
+
+    public static final double kTopS = 0.18466;
+    public static final double kTopV = 0.61525;
+    public static final double kTopA = 0.10115;
+    public static final double kBottomS = 0.20086;
+    public static final double kBottomV = 0.61803;
+    public static final double kBottomA = 0.098545;
   }
 
   public static class ShooterConstants {

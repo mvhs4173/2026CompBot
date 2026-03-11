@@ -29,6 +29,7 @@ import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -181,7 +182,7 @@ public class Shooter extends SubsystemBase {
       m_shooterEncoder.getVelocity(),
       ShooterConstants.kShooterVelocitySetpoint
     ); //encoder rpm / 60 = rps
-    double volts = fb + ff;
+    double volts = ff;
     m_leadShooterMotor.setVoltage(volts);
   }
 
@@ -206,6 +207,8 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("ShooterRot", m_shooterEncoder.getPosition());
+    SmartDashboard.putNumber("ShooterRPM", m_shooterEncoder.getVelocity());
     // This method will be called onc  per scheduler run
   }
 }
