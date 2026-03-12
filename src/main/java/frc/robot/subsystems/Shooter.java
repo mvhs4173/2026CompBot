@@ -100,10 +100,7 @@ public class Shooter extends SubsystemBase {
   );
 
   private final SimpleMotorFeedforward m_shooterFFController = new SimpleMotorFeedforward(
-    ShooterConstants.kS,
-    ShooterConstants.kV,
-    ShooterConstants.kA
-  );
+    ShooterConstants.kS, ShooterConstants.kV, ShooterConstants.kA);
 
   private final Hood m_hood;
 
@@ -158,7 +155,8 @@ public class Shooter extends SubsystemBase {
           .motor("Lead shoot (Left)")
           .voltage(
             m_appliedVoltage.mut_replace(
-              m_leadShooterMotor.get() * m_leadShooterMotor.getBusVoltage(),
+              m_leadShooterMotor.getAppliedOutput() *
+              m_leadShooterMotor.getBusVoltage(),
               Volts
             )
           )
@@ -186,10 +184,10 @@ public class Shooter extends SubsystemBase {
 
   public void shoot() {
     double ff =
-      m_shooterFFController.calculate(ShooterConstants.kShooterVelocitySetpoint);
+      m_shooterFFController.calculate(ShooterConstants.kTargetSpeed);
     double fb = m_shooterPIDController.calculate(
       m_shooterEncoder.getVelocity(),
-      ShooterConstants.kShooterVelocitySetpoint
+      ShooterConstants.kTargetSpeed
     ); //encoder rpm / 60 = rps
     double volts = ff + fb;
     m_leadShooterMotor.setVoltage(volts);

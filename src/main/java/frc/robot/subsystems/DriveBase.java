@@ -1,22 +1,18 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotation;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
-import com.ctre.phoenix6.hardware.Pigeon2;
-import com.studica.frc.AHRS;
-import com.studica.frc.AHRS.NavXComType;
+import edu.wpi.first.math.controller.HolonomicDriveController;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -25,10 +21,12 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.trajectory.constraint.MaxVelocityConstraint;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.MutDistance;
-import edu.wpi.first.units.measure.MutLinearVelocity;
+import edu.wpi.first.units.measure.MutAngle;
+import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.util.sendable.Sendable;
@@ -49,6 +47,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.Gyro;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class DriveBase extends SubsystemBase implements Sendable {
 
@@ -78,16 +77,25 @@ public class DriveBase extends SubsystemBase implements Sendable {
   private SysIdRoutine m_sysIdRoutine;
 
   private final MutVoltage m_appliedVoltage = Volts.mutable(0);
-  private final MutDistance m_distance = Meters.mutable(0);
-  private final MutLinearVelocity m_velocity = MetersPerSecond.mutable(0);
+  private final MutAngle m_distance = Rotations.mutable(0);
+  private final MutAngularVelocity m_velocity = RPM.mutable(0);
+
+  private HolonomicDriveController m_driveController;
 
   /** Creates a new DriveBase. */
   public DriveBase() {
-    for (int i = 0; i < 4; i++) {
-      m_modules[i] = new MAXSwerveModule(
-        DrivetrainConstants.SwerveModules.values()[i]
-      );
-    }
+    m_modules[0] = new MAXSwerveModule(
+      DrivetrainConstants.SwerveModules.frontLeft
+    );
+    m_modules[1] = new MAXSwerveModule(
+      DrivetrainConstants.SwerveModules.frontRight
+    );
+    m_modules[2] = new MAXSwerveModule(
+      DrivetrainConstants.SwerveModules.backLeft
+    );
+    m_modules[3] = new MAXSwerveModule(
+      DrivetrainConstants.SwerveModules.backRight
+    );
     m_swerveDriveKinematics = new SwerveDriveKinematics(
       DrivetrainConstants.SwerveModules.frontLeft.wheelPos,
       DrivetrainConstants.SwerveModules.frontRight.wheelPos,
@@ -115,58 +123,58 @@ public class DriveBase extends SubsystemBase implements Sendable {
         log
           .motor("drive-front-left")
           .voltage(
-            m_appliedVoltage.mut_replace(m_modules[0].getVoltage(), Volts)
+            m_appliedVoltage.mut_replace(m_modules[0].getDriveVoltage(), Volts)
           )
-          .linearPosition(
-            m_distance.mut_replace(m_modules[0].getDistanceMeters(), Meters)
-          )
-          .linearVelocity(
-            m_velocity.mut_replace(
-              m_modules[0].getSpeedMetersPerSecond(),
-              MetersPerSecond
+          .angularPosition(
+            m_distance.mut_replace(
+              m_modules[0].getRawEncoderPosition(),
+              Rotations
             )
+          )
+          .angularVelocity(
+            m_velocity.mut_replace(m_modules[0].getRawEncoderVelocity(), RPM)
           );
         log
           .motor("drive-front-right")
           .voltage(
-            m_appliedVoltage.mut_replace(m_modules[1].getVoltage(), Volts)
+            m_appliedVoltage.mut_replace(m_modules[1].getDriveVoltage(), Volts)
           )
-          .linearPosition(
-            m_distance.mut_replace(m_modules[1].getDistanceMeters(), Meters)
-          )
-          .linearVelocity(
-            m_velocity.mut_replace(
-              m_modules[1].getSpeedMetersPerSecond(),
-              MetersPerSecond
+          .angularPosition(
+            m_distance.mut_replace(
+              m_modules[1].getRawEncoderPosition(),
+              Rotations
             )
+          )
+          .angularVelocity(
+            m_velocity.mut_replace(m_modules[1].getRawEncoderVelocity(), RPM)
           );
         log
           .motor("drive-back-left")
           .voltage(
-            m_appliedVoltage.mut_replace(m_modules[2].getVoltage(), Volts)
+            m_appliedVoltage.mut_replace(m_modules[2].getDriveVoltage(), Volts)
           )
-          .linearPosition(
-            m_distance.mut_replace(m_modules[2].getDistanceMeters(), Meters)
-          )
-          .linearVelocity(
-            m_velocity.mut_replace(
-              m_modules[2].getSpeedMetersPerSecond(),
-              MetersPerSecond
+          .angularPosition(
+            m_distance.mut_replace(
+              m_modules[2].getRawEncoderPosition(),
+              Rotations
             )
+          )
+          .angularVelocity(
+            m_velocity.mut_replace(m_modules[2].getRawEncoderVelocity(), RPM)
           );
         log
           .motor("drive-back-right")
           .voltage(
-            m_appliedVoltage.mut_replace(m_modules[3].getVoltage(), Volts)
+            m_appliedVoltage.mut_replace(m_modules[3].getDriveVoltage(), Volts)
           )
-          .linearPosition(
-            m_distance.mut_replace(m_modules[3].getDistanceMeters(), Meters)
-          )
-          .linearVelocity(
-            m_velocity.mut_replace(
-              m_modules[3].getSpeedMetersPerSecond(),
-              MetersPerSecond
+          .angularPosition(
+            m_distance.mut_replace(
+              m_modules[3].getRawEncoderPosition(),
+              Rotations
             )
+          )
+          .angularVelocity(
+            m_velocity.mut_replace(m_modules[3].getRawEncoderVelocity(), RPM)
           );
       },
       this,
@@ -174,6 +182,28 @@ public class DriveBase extends SubsystemBase implements Sendable {
     );
 
     m_sysIdRoutine = new SysIdRoutine(m_sysIdConfig, m_sysIdMechanism);
+
+    // FIXME: Needs constants
+    PIDController xPIDController = new PIDController(0, 0, 0);
+    PIDController yPIDController = new PIDController(0, 0, 0);
+    ProfiledPIDController thetaPIDController = new ProfiledPIDController(
+      0,
+      0,
+      0,
+      new Constraints(0, 0)
+    ); // radians per second (per second)
+    thetaPIDController.enableContinuousInput(-Math.PI, Math.PI);
+    m_driveController = new HolonomicDriveController(
+      xPIDController,
+      yPIDController,
+      thetaPIDController
+    );
+  }
+
+  public void setSwerveAngle(double angleRadians) {
+    for (int i = 0; i < 4; i++) {
+      m_modules[i].setSwerveAngle(Rotation2d.fromRadians(angleRadians));
+    }
   }
 
   public void applyVolts(Voltage v) {
@@ -251,9 +281,9 @@ public class DriveBase extends SubsystemBase implements Sendable {
       speeds.vyMetersPerSecond
     );
     double linearVelocity = Math.hypot(
-      speeds.vxMetersPerSecond,
-      speeds.vyMetersPerSecond
-    ); // pythagorean theorem
+      speeds.vyMetersPerSecond,
+      speeds.vxMetersPerSecond
+    );
     linearVelocity = linearVelocity < Constants.OperatorConstants.kTolerance
       ? 0
       : linearVelocity;
@@ -279,7 +309,6 @@ public class DriveBase extends SubsystemBase implements Sendable {
 
   public void applyModuleStates(SwerveModuleState[] states) {
     for (int i = 0; i < 4; i++) {
-      // apply speeds to each wheel
       m_modules[i].setDesiredState(states[i]);
     }
     m_odometer.update(getAngle(), getModulePositions());
@@ -295,23 +324,20 @@ public class DriveBase extends SubsystemBase implements Sendable {
     );
   }
 
-  /*
-   * Temporary Mentor code for testing FIXME
-   */
   private SwerveModulePosition[] getModulePositions() {
     return Arrays.stream(m_modules)
       .map(MAXSwerveModule::getPosition)
       .toArray(SwerveModulePosition[]::new);
   }
 
-  public void zeroTurnEncoders() {
-    Arrays.stream(m_modules).forEach(null);
-  }
-
   @Override
   public void periodic() {
     SmartDashboard.putData("Field", m_field);
-    SmartDashboard.putData("DriveBase", this);
+    SmartDashboard.putData("FL", m_modules[0]);
+    SmartDashboard.putData("FR", m_modules[1]);
+    SmartDashboard.putData("BL", m_modules[2]);
+    SmartDashboard.putData("BR", m_modules[3]);
+    SmartDashboard.putNumber("Gyro", getAngleDegrees());
   }
 
   public Pose2d getPose() {
@@ -338,7 +364,7 @@ public class DriveBase extends SubsystemBase implements Sendable {
       trajectory,
       this::getPose,
       m_swerveDriveKinematics,
-      null, //FIXME: Create a holonomic drive controller object with pid constants.
+      m_driveController,
       this::applyModuleStates,
       this
     );
@@ -348,9 +374,25 @@ public class DriveBase extends SubsystemBase implements Sendable {
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("SwerveModule");
     builder.addDoubleProperty("gyroAngle", this::getAngleDegrees, null);
-    builder.addDoubleProperty("FL Heading", m_modules[0]::getWheelAngle, null);
-    builder.addDoubleProperty("FR Heading", m_modules[1]::getWheelAngle, null);
-    builder.addDoubleProperty("BL Heading", m_modules[2]::getWheelAngle, null);
-    builder.addDoubleProperty("BR Heading", m_modules[3]::getWheelAngle, null);
+    builder.addDoubleProperty(
+      "FL Heading",
+      m_modules[0]::getAngleDegrees,
+      null
+    );
+    builder.addDoubleProperty(
+      "FR Heading",
+      m_modules[1]::getAngleDegrees,
+      null
+    );
+    builder.addDoubleProperty(
+      "BL Heading",
+      m_modules[2]::getAngleDegrees,
+      null
+    );
+    builder.addDoubleProperty(
+      "BR Heading",
+      m_modules[3]::getAngleDegrees,
+      null
+    );
   }
 }
