@@ -47,7 +47,7 @@ public class HubOutpostShoot extends SequentialCommandGroup {
         m_indexer.getIndexCommand(4)
       )
 
-
+      
 
     );
   }
