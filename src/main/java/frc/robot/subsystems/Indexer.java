@@ -29,6 +29,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -239,10 +241,9 @@ public class Indexer extends SubsystemBase {
     );
   }
 
-  public void indexBottomIn() {
+  /**public void indexBottomIn() {
     double ff =
-      IndexerConstants.kBottomMotorVelocitySetpoint /
-      IndexerConstants.kBottomMotorMaxSpeed;
+      m_bottomFF.calculate(IndexerConstants.kBottomMotorVelocitySetpoint);
     double fb = m_leadIndexPIDController.calculate(
       m_leadEncoder.getVelocity() / 5.0,
       IndexerConstants.kBottomMotorVelocitySetpoint
@@ -253,14 +254,24 @@ public class Indexer extends SubsystemBase {
 
   public void indexTopIn() {
     double ff =
-      IndexerConstants.kTopRollerVelocitySetpoint /
-      IndexerConstants.kTopMotorMaxSpeed;
+      m_topFF.calculate(IndexerConstants.kTopRollerVelocitySetpoint);
     double fb = m_topRollerPIDController.calculate(
       m_topRollerEncoder.getVelocity() / 5.0,
       IndexerConstants.kTopRollerVelocitySetpoint
     );
     double volts = fb + ff;
     m_topRollerMotor.setVoltage(volts);
+  }*/
+
+  public void indexIn() {
+    double ff =
+      m_bottomFF.calculate(IndexerConstants.kBottomMotorVelocitySetpoint);
+    double fb = m_leadIndexPIDController.calculate(
+      m_leadEncoder.getVelocity() / 5.0,
+      IndexerConstants.kBottomMotorVelocitySetpoint
+    );
+    double volts = fb + ff;
+    m_leadIndexMotor.setVoltage(volts);
   }
 
   public void indexStop() {
@@ -273,11 +284,19 @@ public class Indexer extends SubsystemBase {
     m_topRollerMotor.setVoltage(-IndexerConstants.kVoltage);
   }
 
-  /*  public void topRollerIn() {
-    double topRollerVolts = 
-      m_topRollerPIDController.calculate(
-        m_topRollerEncoder.getVelocity() / 60, IndexerConstants.kTopRollerVelocitySetpoint); //rpm / 60 = rps
-    m_topRollerMotor.setVoltage(topRollerVolts);
+  public void topRollerIn() {
+    // double topRollerVolts = 
+    //   m_topRollerPIDController.calculate(
+    //     m_topRollerEncoder.getVelocity() / 60, IndexerConstants.kTopRollerVelocitySetpoint); //rpm / 60 = rps
+    // m_topRollerMotor.setVoltage(topRollerVolts);
+    double ff =
+      m_topFF.calculate(IndexerConstants.kTopRollerVelocitySetpoint);
+    double fb = m_topRollerPIDController.calculate(
+      m_topRollerEncoder.getVelocity() / 5.0,
+      IndexerConstants.kTopRollerVelocitySetpoint
+    );
+    double volts = fb + ff;
+    m_topRollerMotor.setVoltage(volts);
   } 
   
 
@@ -288,7 +307,7 @@ public class Indexer extends SubsystemBase {
   public void topRollerReverse() {
     m_topRollerMotor.setVoltage(-IndexerConstants.kVoltage);
   }
-    */
+    
 
   public Command runTopSysID() {
     return new SequentialCommandGroup(
@@ -306,6 +325,16 @@ public class Indexer extends SubsystemBase {
       m_sysIdBottomRoutine.quasistatic(Direction.kForward),
       m_sysIdBottomRoutine.quasistatic(Direction.kReverse)
     );
+  }
+
+  public void runBothIndexers() {
+    topRollerIn();
+    indexIn();
+  }
+
+  public Command getIndexCommand(double time) {
+    return new RunCommand(this::runBothIndexers, this)
+      .withTimeout(time);
   }
 
   @Override

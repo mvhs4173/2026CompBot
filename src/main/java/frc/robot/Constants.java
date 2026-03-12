@@ -205,6 +205,8 @@ public final class Constants {
 
   public static class ShooterConstants {
 
+    public static final Rotation2d kHoodTrenchShotAngle = Rotation2d.fromDegrees(0); //TODO:calculate angle
+
     public static final int kLeftHoodServoChannel = 0;
     public static final int kRightHoodServoChannel = 1;
 

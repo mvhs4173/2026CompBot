@@ -129,7 +129,7 @@ public class RobotContainer {
       );
 
     //Index in
-    m_operatorController
+   /* m_operatorController
       .leftBumper()
       .whileTrue(
         new RunCommand(m_indexer::indexBottomIn).finallyDo(m_indexer::indexStop)
@@ -138,7 +138,7 @@ public class RobotContainer {
       .rightBumper()
       .whileTrue(
         new RunCommand(m_indexer::indexTopIn).finallyDo(m_indexer::indexStop)
-      );
+      ); */
 
     //Shoot
     m_operatorController
