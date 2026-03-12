@@ -274,6 +274,14 @@ public class Intake extends SubsystemBase {
       .finallyDo(this::stopDeployMotors);
   }
 
+  public Command getIntakeCommand(double time) {
+    return new RunCommand(this::runIntake, this)
+        .withTimeout(time)
+        .finallyDo(this::stopIntake);
+  }
+
+  
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
