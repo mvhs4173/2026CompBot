@@ -260,14 +260,14 @@ public class Intake extends SubsystemBase {
     m_rightDeploymentPIDController.reset();
   }
 
-  private Command getDeployCommand() {
+  public Command getDeployCommand() {
     return new RunCommand(this::deploy, this)
       .until(this::isDeployed)
       .withTimeout(3)
       .finallyDo(this::stopDeployMotors);
   }
 
-  private Command getRetractCommand() {
+  public Command getRetractCommand() {
     return new RunCommand(this::retract, this)
       .until(this::isRetracted)
       .withTimeout(4)
@@ -276,11 +276,9 @@ public class Intake extends SubsystemBase {
 
   public Command getIntakeCommand(double time) {
     return new RunCommand(this::runIntake, this)
-        .withTimeout(time)
-        .finallyDo(this::stopIntake);
+      .withTimeout(time)
+      .finallyDo(this::stopIntake);
   }
-
-  
 
   @Override
   public void periodic() {
