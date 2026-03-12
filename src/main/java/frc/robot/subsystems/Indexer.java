@@ -84,8 +84,16 @@ public class Indexer extends SubsystemBase {
     IndexerConstants.kTopRollerD
   );
 
-  private SimpleMotorFeedforward m_topFF = new SimpleMotorFeedforward(IndexerConstants.kTopS, 0, 0);
-  private SimpleMotorFeedforward m_bottomFF = new SimpleMotorFeedforward(0, 0, 0);
+  private SimpleMotorFeedforward m_topFF = new SimpleMotorFeedforward(
+    IndexerConstants.kTopS,
+    0,
+    0
+  );
+  private SimpleMotorFeedforward m_bottomFF = new SimpleMotorFeedforward(
+    0,
+    0,
+    0
+  );
 
   private Config m_sysIdTopConfig;
   private Mechanism m_sysIdTopMechanism;
@@ -264,8 +272,9 @@ public class Indexer extends SubsystemBase {
   }*/
 
   public void indexIn() {
-    double ff =
-      m_bottomFF.calculate(IndexerConstants.kBottomMotorVelocitySetpoint);
+    double ff = m_bottomFF.calculate(
+      IndexerConstants.kBottomMotorVelocitySetpoint
+    );
     double fb = m_leadIndexPIDController.calculate(
       m_leadEncoder.getVelocity() / 5.0,
       IndexerConstants.kBottomMotorVelocitySetpoint
@@ -285,20 +294,18 @@ public class Indexer extends SubsystemBase {
   }
 
   public void topRollerIn() {
-    // double topRollerVolts = 
+    // double topRollerVolts =
     //   m_topRollerPIDController.calculate(
     //     m_topRollerEncoder.getVelocity() / 60, IndexerConstants.kTopRollerVelocitySetpoint); //rpm / 60 = rps
     // m_topRollerMotor.setVoltage(topRollerVolts);
-    double ff =
-      m_topFF.calculate(IndexerConstants.kTopRollerVelocitySetpoint);
+    double ff = m_topFF.calculate(IndexerConstants.kTopRollerVelocitySetpoint);
     double fb = m_topRollerPIDController.calculate(
       m_topRollerEncoder.getVelocity() / 5.0,
       IndexerConstants.kTopRollerVelocitySetpoint
     );
     double volts = fb + ff;
     m_topRollerMotor.setVoltage(volts);
-  } 
-  
+  }
 
   public void topRollerStop() {
     m_topRollerMotor.setVoltage(0);
@@ -307,7 +314,6 @@ public class Indexer extends SubsystemBase {
   public void topRollerReverse() {
     m_topRollerMotor.setVoltage(-IndexerConstants.kVoltage);
   }
-    
 
   public Command runTopSysID() {
     return new SequentialCommandGroup(
@@ -333,8 +339,7 @@ public class Indexer extends SubsystemBase {
   }
 
   public Command getIndexCommand(double time) {
-    return new RunCommand(this::runBothIndexers, this)
-      .withTimeout(time);
+    return new RunCommand(this::runBothIndexers, this).withTimeout(time);
   }
 
   @Override

@@ -155,7 +155,7 @@ public class Intake extends SubsystemBase {
    * @return Encoder position * Gear ratio * Rotation to Meters values
    */
   public double getLeftDeploymentExtensionMeters() {
-    return m_leftDeployEncoder.getPosition() * 0.0127;
+    return (m_leftDeployEncoder.getPosition() * 0.0127) / 2;
   }
 
   /**
@@ -163,7 +163,7 @@ public class Intake extends SubsystemBase {
    * @return Encoder position * Gear ratio * Rotation to Meters values
    */
   public double getRightDeploymentExtensionMeters() {
-    return m_rightDeployEncoder.getPosition() * 0.0127;
+    return (m_rightDeployEncoder.getPosition() * 0.0127) / 2;
   }
 
   /**
@@ -198,19 +198,21 @@ public class Intake extends SubsystemBase {
    * Schedules either the getDeployCommand or the getRetractCommand
    * @param deploy True: Schedules deploy command, False: Schedules retract command
    */
-  public void setDeployment(boolean deploy) {
-    if (deploy) {
-      CommandScheduler.getInstance().schedule(getDeployCommand());
-    } else {
-      CommandScheduler.getInstance().schedule(getRetractCommand());
-    }
+  public Command setDeployment(boolean deploy) {
+    m_deploymentStatus = deploy;
+    return deploy ? getDeployCommand() : getRetractCommand();
   }
 
   /**
    * Calls setDeployment, with a boolean value opposite of the current deployment status
    */
   public void toggleDeploy() {
-    setDeployment(!m_deploymentStatus);
+    m_deploymentStatus = !m_deploymentStatus;
+    if (m_deploymentStatus) {
+      CommandScheduler.getInstance().schedule(getRetractCommand());
+    } else {
+      CommandScheduler.getInstance().schedule(getDeployCommand());
+    }
   }
 
   /**
@@ -258,34 +260,20 @@ public class Intake extends SubsystemBase {
     m_rightDeploymentPIDController.reset();
   }
 
-<<<<<<< HEAD
   private Command getDeployCommand() {
-=======
-
-  public Command getDeployCommand() {
->>>>>>> cc014994e26312498e5bda71562e0a954837a073
     return new RunCommand(this::deploy, this)
       .until(this::isDeployed)
+      .withTimeout(3)
       .finallyDo(this::stopDeployMotors);
   }
 
-  public Command getRetractCommand() {
+  private Command getRetractCommand() {
     return new RunCommand(this::retract, this)
       .until(this::isRetracted)
+      .withTimeout(4)
       .finallyDo(this::stopDeployMotors);
   }
 
-<<<<<<< HEAD
-=======
-  public Command getIntakeCommand(double time) {
-    return new RunCommand(this::runIntake, this)
-        .withTimeout(time)
-        .finallyDo(this::stopIntake);
-  }
-
-  
-
->>>>>>> cc014994e26312498e5bda71562e0a954837a073
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -293,6 +281,9 @@ public class Intake extends SubsystemBase {
       "Intake Deployment Extension Inches",
       Units.metersToInches(getLeftDeploymentExtensionMeters())
     );
+    SmartDashboard.putBoolean("DepStatus", m_deploymentStatus);
+    SmartDashboard.putBoolean("isdeployed", isDeployed());
+    SmartDashboard.putBoolean("isRetracted", isRetracted());
 
     SmartDashboard.putNumber(
       "LeftDeployCurrent",

@@ -65,28 +65,28 @@ public final class Constants {
 
     public enum SwerveModules {
       frontLeft(
-        new Translation2d(wheelBase / 2, trackWidth / 2),
+        new Translation2d(wheelBase / 2, -trackWidth / 2),
         10,
         41,
         false,
         Rotation2d.fromDegrees(0)
       ),
       frontRight(
-        new Translation2d(wheelBase / 2, -trackWidth / 2),
+        new Translation2d(wheelBase / 2, trackWidth / 2),
         20,
         31,
         false,
         Rotation2d.fromDegrees(0)
       ),
       backLeft(
-        new Translation2d(-wheelBase / 2, trackWidth / 2),
+        new Translation2d(-wheelBase / 2, -trackWidth / 2),
         30,
         21,
         false,
         new Rotation2d(0)
       ),
       backRight(
-        new Translation2d(-wheelBase / 2, -trackWidth / 2),
+        new Translation2d(-wheelBase / 2, trackWidth / 2),
         40,
         11,
         false,
@@ -130,9 +130,9 @@ public final class Constants {
     public static final int kRetractedLimitSwitchPort = 1;
 
     // PID values
-    public static final double kDeployP = 25;
-    public static final double kDeployI = 0.5;
-    public static final double kDeployD = 2;
+    public static final double kDeployP = 55;
+    public static final double kDeployI = 2;
+    public static final double kDeployD = 5;
 
     // FF values
     public static final double kDeployS = 0;
@@ -150,14 +150,14 @@ public final class Constants {
       ((kMotorMaxSpeedRPM * kGearRatio) / 60.0) * kRotationsToMeters;
 
     public static final double kDeployDistanceMeters = Units.inchesToMeters(
-      15
+      12.5
     ); // 13.25 inches extension
     public static final double kDeployToleranceMeters = Units.inchesToMeters(
-      0.25
-    ); // 1 inch tolerance
+      0.5
+    ); //0.05); // 1 inch tolerance
 
     public static final double kDeploymentSpeed = 0.2; // % speed
-    public static final double kRunningVolts = 8.0; // Volts
+    public static final double kRunningVolts = 12.0; // Volts
 
     public static final boolean kDeploymentInverted = false;
 
@@ -187,8 +187,8 @@ public final class Constants {
     //Setpoint for PID controller //TODO: setpoint calculations
     public static final double kTopMotorMaxSpeed = 5760.0 / 5.0;
     public static final double kBottomMotorMaxSpeed = 5760.0 / 5.0;
-    public static final double kBottomMotorVelocitySetpoint = (2880.0 / 5.0); //1/2 Max rpm / gear ratio
-    public static final double kTopRollerVelocitySetpoint = (2880.0 / 3.0); //Same
+    public static final double kBottomMotorVelocitySetpoint = (4500.0 / 5.0); //1/2 Max rpm / gear ratio
+    public static final double kTopRollerVelocitySetpoint = (4500.0 / 3.0); //Same
 
     public static final double kVoltage = 3.0;
     public static final Velocity<VoltageUnit> kSysIdRampRate = null;
@@ -205,7 +205,8 @@ public final class Constants {
 
   public static class ShooterConstants {
 
-    public static final Rotation2d kHoodTrenchShotAngle = Rotation2d.fromDegrees(0); //TODO:calculate angle
+    public static final Rotation2d kHoodTrenchShotAngle =
+      Rotation2d.fromDegrees(0); //TODO:calculate angle
 
     public static final int kLeftHoodServoChannel = 0;
     public static final int kRightHoodServoChannel = 1;
