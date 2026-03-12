@@ -258,12 +258,7 @@ public class Intake extends SubsystemBase {
     m_rightDeploymentPIDController.reset();
   }
 
-<<<<<<< HEAD
-  private Command getDeployCommand() {
-=======
-
   public Command getDeployCommand() {
->>>>>>> cc014994e26312498e5bda71562e0a954837a073
     return new RunCommand(this::deploy, this)
       .until(this::isDeployed)
       .finallyDo(this::stopDeployMotors);
@@ -275,8 +270,6 @@ public class Intake extends SubsystemBase {
       .finallyDo(this::stopDeployMotors);
   }
 
-<<<<<<< HEAD
-=======
   public Command getIntakeCommand(double time) {
     return new RunCommand(this::runIntake, this)
         .withTimeout(time)
@@ -285,7 +278,6 @@ public class Intake extends SubsystemBase {
 
   
 
->>>>>>> cc014994e26312498e5bda71562e0a954837a073
   @Override
   public void periodic() {
     // This method will be called once per scheduler run

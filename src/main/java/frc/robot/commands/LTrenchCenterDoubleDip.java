@@ -8,16 +8,28 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
+import frc.robot.subsystems.DriveBase;
+import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class LTrenchCenterDoubleDip extends SequentialCommandGroup {
+  DriveBase m_driveBase;
+  Intake m_intake;
+  Shooter m_shooter;
+  Indexer m_indexer;
 
   /** Creates a new LTrenchCenterDoubleDip.
    *  Start at left trench, collects in center, goes under trench, shoots X2
    */
-  public LTrenchCenterDoubleDip() {
+  public LTrenchCenterDoubleDip(DriveBase driveBase, Intake intake, Shooter shooter, Indexer indexer) {
+    m_driveBase = driveBase;
+    m_intake = intake;
+    m_shooter = shooter;
+    m_indexer = indexer;
 
     addCommands(
       // Start at left trench
@@ -39,7 +51,7 @@ public class LTrenchCenterDoubleDip extends SequentialCommandGroup {
       new ParallelCommandGroup(
         m_indexer.getIndexCommand(10),
         m_shooter.getShootCommand(10) //TODO: set time to shoot for
-      )
+      ),
 
       // Go to center
 

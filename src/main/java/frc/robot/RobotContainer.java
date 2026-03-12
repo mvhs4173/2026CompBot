@@ -92,10 +92,14 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    m_driverController.povDown().whileTrue(new RunCommand(()->{m_driveBase.setSwerveAngle(Math.atan2(m_driverController.getRightX(), -m_driverController.getRightY()));}, m_driveBase));
+   // m_driverController.povDown().whileTrue(new RunCommand(()->{m_driveBase.setSwerveAngle(Math.atan2(m_driverController.getRightX(), -m_driverController.getRightY()));}, m_driveBase));
+
     m_driverController
       .y()
       .onTrue(new InstantCommand(m_driveBase::resetGyro, m_driveBase));
+
+
+      //Operator
 
     // Toggle deployed
     m_operatorController
@@ -147,16 +151,12 @@ public class RobotContainer {
     
 
     //Index in
-   /* m_operatorController
+   m_operatorController
       .leftBumper()
       .whileTrue(
-        new RunCommand(m_indexer::indexBottomIn).finallyDo(m_indexer::indexStop)
+        m_indexer.getIndexCommand(3).finallyDo(m_indexer::indexStop)
       );
-    m_operatorController
-      .rightBumper()
-      .whileTrue(
-        new RunCommand(m_indexer::indexTopIn).finallyDo(m_indexer::indexStop)
-      ); */
+
 
     //Shoot
     m_operatorController
