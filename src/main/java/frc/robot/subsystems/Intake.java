@@ -80,11 +80,11 @@ public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   public Intake() {
     m_leftDeployConfig
-      .inverted(false)
+      .inverted(true)
       .smartCurrentLimit(40)
       .idleMode(IdleMode.kCoast);
     m_leftDeployMotor.configure(
-      m_rightDeployConfig,
+      m_leftDeployConfig,
       ResetMode.kResetSafeParameters,
       PersistMode.kPersistParameters
     );
@@ -96,7 +96,7 @@ public class Intake extends SubsystemBase {
       .inverted(IntakeConstants.kLeftDeployEncoderInverted);
 
     m_rightDeployConfig //.follow(IntakeConstants.kLeadIntakeDeploymentID)
-      .inverted(false)
+      .inverted(true)
       .smartCurrentLimit(40)
       .idleMode(IdleMode.kCoast);
     m_rightDeployMotor.configure(
@@ -280,6 +280,23 @@ public class Intake extends SubsystemBase {
     SmartDashboard.putNumber(
       "Intake Deployment Extension Inches",
       Units.metersToInches(getLeftDeploymentExtensionMeters())
+    );
+
+    SmartDashboard.putNumber(
+      "LeftDeployCurrent",
+      m_leftDeployMotor.getOutputCurrent()
+    );
+    SmartDashboard.putNumber(
+      "LeftDeployVoltage",
+      m_leftDeployMotor.getAppliedOutput() * m_leftDeployMotor.getBusVoltage()
+    );
+    SmartDashboard.putNumber(
+      "RightDeployCurrent",
+      m_rightDeployMotor.getOutputCurrent()
+    );
+    SmartDashboard.putNumber(
+      "RightDeployVoltage",
+      m_rightDeployMotor.getAppliedOutput() * m_rightDeployMotor.getBusVoltage()
     );
   }
 }

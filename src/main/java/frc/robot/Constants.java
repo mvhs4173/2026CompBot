@@ -129,10 +129,8 @@ public final class Constants {
     public static final int kRetractedLimitSwitchPort = 1;
 
     // PID values
-    private static final double kDeployPEstimate =
-      (1.0 / 3.0) * (1.0 / 3.0) * 12;
     // 1.0/3.0 - meters to travel - 1.0/3.0 - 1/seconds travel time - 12 - Volts
-    public static final double kDeployP = kDeployPEstimate; // Estimate of volts - 0 meters to 1/3 in 3 seconds
+    public static final double kDeployP = 3; // Estimate of volts - 0 meters to 1/3 in 3 seconds
     public static final double kDeployI = 0;
     public static final double kDeployD = 0;
 
@@ -145,8 +143,8 @@ public final class Constants {
       0.5 / 1.0
     ); // Jackscrew rotations to meters
     // travelled
-    public static final double kGearRatio = 1.0 / 3.0; // gear ratio
-    private static final double kMotorMaxSpeedRPM = 11000; // NEO 550 free speed
+    public static final double kGearRatio = 1.0 / 1.0; // gear ratio
+    private static final double kMotorMaxSpeedRPM = 5760; // NEO 1650 free speed
 
     public static final double kMaxDeploySpeedMPS =
       ((kMotorMaxSpeedRPM * kGearRatio) / 60.0) * kRotationsToMeters;
@@ -174,11 +172,11 @@ public final class Constants {
     public static final int kTopRollerMotorID = 55;
 
     //PID values
-    public static final double kIndexP = 0.5;
+    public static final double kIndexP = 0.005;
     public static final double kIndexI = 0;
     public static final double kIndexD = 0;
 
-    public static final double kTopRollerP = 0.5;
+    public static final double kTopRollerP = 0.005;
     public static final double kTopRollerI = 0;
     public static final double kTopRollerD = 0;
 
@@ -223,16 +221,16 @@ public final class Constants {
 
     public static final double kMaxSpeed = 5676.0;
 
-    public static final double kP = 0.039904;
+    public static final double kP = 0.037803;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
-    public static final double kS = 0.086855;
-    public static final double kV = 0.12862;
-    public static final double kA = 0.037593;
-
-    public static final double kShooterVelocitySetpoint = 4000; //Setpoint for PID controller //TODO: setpoint calculations
+    public static final double kS = 0.19316;
+    public static final double kV = 0.12726;
+    public static final double kA = 0.038209;
 
     public static final double kVoltage = 6.0;
+
+    public static final double kTargetSpeed = 4000;
 
     //Sysid shtuff
 

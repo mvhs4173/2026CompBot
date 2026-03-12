@@ -63,9 +63,9 @@ public class RobotContainer {
           m_driveBase.userDrive(
             m_driverController.getLeftY(),
             m_driverController.getLeftX(),
-            -m_driverController.getRightX(),
-            !m_driverController.leftBumper().getAsBoolean(),
-            m_driverController.rightTrigger().getAsBoolean()
+            m_driverController.getRightX(),
+            !m_driverController.povDown().getAsBoolean(),
+            m_driverController.leftTrigger().getAsBoolean()
           );
         },
         m_driveBase
@@ -97,7 +97,9 @@ public class RobotContainer {
       .onTrue(new InstantCommand(m_driveBase::resetGyro, m_driveBase));
 
     // Toggle deployed
-    m_operatorController.x().onTrue(new InstantCommand(m_intake::toggleDeploy, m_intake));
+    m_operatorController
+      .x()
+      .onTrue(new InstantCommand(m_intake::toggleDeploy, m_intake));
 
     // Run the Intake
     m_operatorController
