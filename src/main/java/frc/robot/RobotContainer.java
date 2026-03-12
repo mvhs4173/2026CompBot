@@ -113,7 +113,7 @@ public class RobotContainer {
 
     //Flush - Reverse intake, indexer, and shooter
     m_operatorController
-      .povUp()
+      .rightBumper()
       .whileTrue(
         new ParallelCommandGroup(
           new RunCommand(m_intake::reverseIntake, m_intake).finallyDo(
@@ -127,6 +127,24 @@ public class RobotContainer {
           )
         )
       );
+
+    //Adjust hood
+    m_operatorController
+      .povUp()
+      .onTrue(m_shooter.getSetHoodCommand(Constants.ShooterConstants.kHoodMaximumAngle));
+
+    m_operatorController
+      .povLeft()
+      .onTrue(m_shooter.getSetHoodCommand(Constants.ShooterConstants.kHoodLowMiddleAngle));
+
+    m_operatorController
+      .povRight()
+      .onTrue(m_shooter.getSetHoodCommand(Constants.ShooterConstants.kHoodHighMiddleAngle));
+
+    m_operatorController
+      .povDown()
+      .onTrue(m_shooter.getSetHoodCommand(Constants.ShooterConstants.kHoodMinimumAngle));
+    
 
     //Index in
    /* m_operatorController

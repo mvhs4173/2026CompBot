@@ -43,7 +43,7 @@ public class LTrenchCenterShoot extends SequentialCommandGroup {
       // Move back to under trench
 
       // Set shooter angle
-      m_shooter.getSetHoodCommand(Constants.ShooterConstants.kHoodTrenchShotAngle),
+      m_shooter.getSetHoodCommand(Constants.ShooterConstants.kHoodLowMiddleAngle),
 
       // Shoot
       new ParallelCommandGroup(

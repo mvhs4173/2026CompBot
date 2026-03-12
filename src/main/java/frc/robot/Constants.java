@@ -205,17 +205,23 @@ public final class Constants {
 
   public static class ShooterConstants {
 
-    public static final Rotation2d kHoodTrenchShotAngle = Rotation2d.fromDegrees(0); //TODO:calculate angle
-
     public static final int kLeftHoodServoChannel = 0;
     public static final int kRightHoodServoChannel = 1;
+
+    public static final Rotation2d kHoodLowMiddleAngle = Rotation2d.fromDegrees(
+      -66); //TODO:calculate angle
+
+    public static final Rotation2d kHoodHighMiddleAngle = Rotation2d.fromDegrees(
+      -59); //TODO:calculate angle
 
     public static final Rotation2d kHoodMinimumAngle = Rotation2d.fromDegrees(
       -74.2
     ); //Angles roughly measured
+    
     public static final Rotation2d kHoodMaximumAngle = Rotation2d.fromDegrees(
       -43
     );
+
     public static final double kHoodMaximumMechanicalExtension = 0.80; //Percent of extension to safely retract
 
     public static final int kLeadShooterMotorID = 57;
