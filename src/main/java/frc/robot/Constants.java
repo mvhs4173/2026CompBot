@@ -57,8 +57,8 @@ public final class Constants {
 
     public static final int pigeonID = 2;
 
-    public static final double trackWidth = Units.inchesToMeters(28);
-    public static final double wheelBase = Units.inchesToMeters(23);
+    public static final double trackWidth = Units.inchesToMeters(26.75);
+    public static final double wheelBase = Units.inchesToMeters(21.5);
 
     public static final double maxSpeed = 5.08257664976; // MPS Theoretical
     public static final double maxRotationSpeed = 11.0448342483; // Radians PS Theoretical
@@ -67,28 +67,28 @@ public final class Constants {
       frontLeft(
         new Translation2d(wheelBase / 2, trackWidth / 2),
         10,
-        11,
+        41,
         false,
         Rotation2d.fromDegrees(0)
       ),
       frontRight(
         new Translation2d(wheelBase / 2, -trackWidth / 2),
         20,
-        21,
+        31,
         false,
         Rotation2d.fromDegrees(0)
       ),
       backLeft(
         new Translation2d(-wheelBase / 2, trackWidth / 2),
         30,
-        31,
+        21,
         false,
         new Rotation2d(0)
       ),
       backRight(
         new Translation2d(-wheelBase / 2, -trackWidth / 2),
         40,
-        41,
+        11,
         false,
         new Rotation2d(0)
       );
@@ -99,6 +99,7 @@ public final class Constants {
       public int turnID;
       public int driveID;
       public boolean driveReversed;
+      public boolean turnReversed = false;
       public double chassisAngularOffset;
 
       public double moduleAngularOffset;
@@ -129,10 +130,9 @@ public final class Constants {
     public static final int kRetractedLimitSwitchPort = 1;
 
     // PID values
-    // 1.0/3.0 - meters to travel - 1.0/3.0 - 1/seconds travel time - 12 - Volts
-    public static final double kDeployP = 3; // Estimate of volts - 0 meters to 1/3 in 3 seconds
-    public static final double kDeployI = 0;
-    public static final double kDeployD = 0;
+    public static final double kDeployP = 25;
+    public static final double kDeployI = 0.5;
+    public static final double kDeployD = 2;
 
     // FF values
     public static final double kDeployS = 0;
@@ -150,10 +150,10 @@ public final class Constants {
       ((kMotorMaxSpeedRPM * kGearRatio) / 60.0) * kRotationsToMeters;
 
     public static final double kDeployDistanceMeters = Units.inchesToMeters(
-      13.25
+      15
     ); // 13.25 inches extension
     public static final double kDeployToleranceMeters = Units.inchesToMeters(
-      1.0
+      0.25
     ); // 1 inch tolerance
 
     public static final double kDeploymentSpeed = 0.2; // % speed

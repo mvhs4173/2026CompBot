@@ -97,6 +97,9 @@ public class Shooter extends SubsystemBase {
     ShooterConstants.kD
   );
 
+  private final SimpleMotorFeedforward m_shooterFFController = new SimpleMotorFeedforward(
+    ShooterConstants.kS, ShooterConstants.kV, ShooterConstants.kA);
+
   private final Hood m_hood;
 
   private Config m_sysIdConfig;
@@ -179,10 +182,10 @@ public class Shooter extends SubsystemBase {
 
   public void shoot() {
     double ff =
-      ShooterConstants.kShooterVelocitySetpoint / ShooterConstants.kMaxSpeed;
+      m_shooterFFController.calculate(ShooterConstants.kTargetSpeed);
     double fb = m_shooterPIDController.calculate(
       m_shooterEncoder.getVelocity(),
-      ShooterConstants.kShooterVelocitySetpoint
+      ShooterConstants.kTargetSpeed
     ); //encoder rpm / 60 = rps
     double volts = ff + fb;
     m_leadShooterMotor.setVoltage(volts);

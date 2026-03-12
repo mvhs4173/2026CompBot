@@ -61,10 +61,10 @@ public class RobotContainer {
       new RunCommand(
         () -> {
           m_driveBase.userDrive(
-            m_driverController.getLeftY(),
+            -m_driverController.getLeftY(),
             m_driverController.getLeftX(),
             m_driverController.getRightX(),
-            !m_driverController.povDown().getAsBoolean(),
+            !m_driverController.y().getAsBoolean(),
             m_driverController.leftTrigger().getAsBoolean()
           );
         },
@@ -92,6 +92,7 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    m_driverController.povDown().whileTrue(new RunCommand(()->{m_driveBase.setSwerveAngle(Math.atan2(m_driverController.getRightX(), -m_driverController.getRightY()));}, m_driveBase));
     m_driverController
       .y()
       .onTrue(new InstantCommand(m_driveBase::resetGyro, m_driveBase));

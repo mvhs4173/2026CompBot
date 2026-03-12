@@ -90,9 +90,7 @@ public class Intake extends SubsystemBase {
     );
 
     m_leftDeployEncoderConfig
-      .positionConversionFactor(
-        IntakeConstants.kRotationsToMeters * IntakeConstants.kGearRatio
-      )
+      .positionConversionFactor(0.0127)
       .inverted(IntakeConstants.kLeftDeployEncoderInverted);
 
     m_rightDeployConfig //.follow(IntakeConstants.kLeadIntakeDeploymentID)
@@ -106,9 +104,7 @@ public class Intake extends SubsystemBase {
     );
 
     m_rightDeployEncoderConfig
-      .positionConversionFactor(
-        IntakeConstants.kRotationsToMeters * IntakeConstants.kGearRatio
-      )
+      .positionConversionFactor(0.0127)
       .inverted(IntakeConstants.kRightDeployEncoderInverted);
 
     m_runningConfig
@@ -159,7 +155,7 @@ public class Intake extends SubsystemBase {
    * @return Encoder position * Gear ratio * Rotation to Meters values
    */
   public double getLeftDeploymentExtensionMeters() {
-    return m_leftDeployEncoder.getPosition();
+    return m_leftDeployEncoder.getPosition() * 0.0127;
   }
 
   /**
@@ -167,7 +163,7 @@ public class Intake extends SubsystemBase {
    * @return Encoder position * Gear ratio * Rotation to Meters values
    */
   public double getRightDeploymentExtensionMeters() {
-    return m_rightDeployEncoder.getPosition();
+    return m_rightDeployEncoder.getPosition() * 0.0127;
   }
 
   /**
