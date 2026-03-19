@@ -70,10 +70,11 @@ public class Intake extends SubsystemBase {
       IntakeConstants.kDeployA
     );
 
-  //private final DigitalInput m_deployedLimitSwitch = new DigitalInput(
-  //    IntakeConstants.kDeployedLimitSwitchPort);
-  //private final DigitalInput m_retractedLimitSwitch = new DigitalInput(
-  //    IntakeConstants.kRetractedLimitSwitchPort);
+  // private final DigitalInput m_deployedLimitSwitch = new DigitalInput(
+  //  IntakeConstants.kDeployedLimitSwitchPort);
+  private final DigitalInput m_retractedLimitSwitch = new DigitalInput(
+    IntakeConstants.kRetractedLimitSwitchPort
+  );
 
   private boolean m_deploymentStatus = false; // T means deployed F means retracted
 
@@ -188,9 +189,10 @@ public class Intake extends SubsystemBase {
    */
   private boolean isRetracted() {
     return (
-      m_deploymentStatus = // m_retractedLimitSwitch.get() ||
-        Math.abs(getLeftDeploymentExtensionMeters()) <
-        IntakeConstants.kDeployToleranceMeters
+      m_deploymentStatus = m_retractedLimitSwitch.get()
+      //  ||
+      // Math.abs(getLeftDeploymentExtensionMeters()) <
+      // IntakeConstants.kDeployToleranceMeters
     );
   }
 
@@ -282,6 +284,7 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
+    SmartDashboard.putBoolean("Retracted", m_retractedLimitSwitch.get());
     // This method will be called once per scheduler run
     SmartDashboard.putNumber(
       "Intake Deployment Extension Inches",
@@ -290,6 +293,10 @@ public class Intake extends SubsystemBase {
     SmartDashboard.putBoolean("DepStatus", m_deploymentStatus);
     SmartDashboard.putBoolean("isdeployed", isDeployed());
     SmartDashboard.putBoolean("isRetracted", isRetracted());
+    SmartDashboard.putNumber(
+      "IntakeRPM",
+      m_runningMotor.getEncoder().getVelocity() / 3.0
+    );
 
     SmartDashboard.putNumber(
       "LeftDeployCurrent",

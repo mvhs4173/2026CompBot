@@ -272,15 +272,15 @@ public class Indexer extends SubsystemBase {
   }*/
 
   public void indexIn() {
-    double ff = m_bottomFF.calculate(
-      IndexerConstants.kBottomMotorVelocitySetpoint
-    );
-    double fb = m_leadIndexPIDController.calculate(
-      m_leadEncoder.getVelocity() / 5.0,
-      IndexerConstants.kBottomMotorVelocitySetpoint
-    );
-    double volts = fb + ff;
-    m_leadIndexMotor.setVoltage(volts);
+    // double ff = m_bottomFF.calculate(
+    //   IndexerConstants.kBottomMotorVelocitySetpoint
+    // );
+    // double fb = m_leadIndexPIDController.calculate(
+    //   m_leadEncoder.getVelocity() / 5.0,
+    //   IndexerConstants.kBottomMotorVelocitySetpoint
+    // );
+    // double volts = fb + ff;
+    m_leadIndexMotor.setVoltage(IndexerConstants.kBottomVoltage);
   }
 
   public void indexStop() {
@@ -289,8 +289,8 @@ public class Indexer extends SubsystemBase {
   }
 
   public void indexReverse() {
-    m_leadIndexMotor.setVoltage(-IndexerConstants.kVoltage);
-    m_topRollerMotor.setVoltage(-IndexerConstants.kVoltage);
+    m_leadIndexMotor.setVoltage(-IndexerConstants.kBottomVoltage);
+    m_topRollerMotor.setVoltage(-IndexerConstants.kTopVoltage);
   }
 
   public void topRollerIn() {
@@ -298,13 +298,13 @@ public class Indexer extends SubsystemBase {
     //   m_topRollerPIDController.calculate(
     //     m_topRollerEncoder.getVelocity() / 60, IndexerConstants.kTopRollerVelocitySetpoint); //rpm / 60 = rps
     // m_topRollerMotor.setVoltage(topRollerVolts);
-    double ff = m_topFF.calculate(IndexerConstants.kTopRollerVelocitySetpoint);
-    double fb = m_topRollerPIDController.calculate(
-      m_topRollerEncoder.getVelocity() / 5.0,
-      IndexerConstants.kTopRollerVelocitySetpoint
-    );
-    double volts = fb + ff;
-    m_topRollerMotor.setVoltage(volts);
+    // double ff = m_topFF.calculate(IndexerConstants.kTopRollerVelocitySetpoint);
+    // double fb = m_topRollerPIDController.calculate(
+    //   m_topRollerEncoder.getVelocity() / 5.0,
+    //   IndexerConstants.kTopRollerVelocitySetpoint
+    // );
+    // double volts = fb + ff;
+    m_topRollerMotor.setVoltage(IndexerConstants.kTopVoltage);
   }
 
   public void topRollerStop() {
@@ -312,7 +312,7 @@ public class Indexer extends SubsystemBase {
   }
 
   public void topRollerReverse() {
-    m_topRollerMotor.setVoltage(-IndexerConstants.kVoltage);
+    m_topRollerMotor.setVoltage(-IndexerConstants.kTopVoltage);
   }
 
   public Command runTopSysID() {
@@ -342,17 +342,12 @@ public class Indexer extends SubsystemBase {
     return new RunCommand(this::runBothIndexers, this).withTimeout(time);
   }
 
-
-
   @Override
   public void periodic() {
-    SmartDashboard.putNumber(
-      "IndexBottom",
-      m_leadEncoder.getVelocity() / (60.0 * 5.0)
-    );
+    SmartDashboard.putNumber("IndexBottom", m_leadEncoder.getVelocity() / 5.0);
     SmartDashboard.putNumber(
       "IndexTop",
-      m_topRollerEncoder.getVelocity() / (60.0 * 3.0)
+      m_topRollerEncoder.getVelocity() / 5.0
     );
     SmartDashboard.putNumber(
       "TopIndexCurrent",

@@ -1,0 +1,84 @@
+{
+ "name":"Auto",
+ "version":2,
+ "type":"Swerve",
+ "variables":{
+  "expressions":{},
+  "poses":{}
+ },
+ "config":{
+  "frontLeft":{
+   "x":{
+    "exp":"10.5 in",
+    "val":0.2667
+   },
+   "y":{
+    "exp":"13.25 in",
+    "val":0.33654999999999996
+   }
+  },
+  "backLeft":{
+   "x":{
+    "exp":"-10.5 in",
+    "val":-0.2667
+   },
+   "y":{
+    "exp":"13.25 in",
+    "val":0.33654999999999996
+   }
+  },
+  "mass":{
+   "exp":"95 lbs",
+   "val":43.09127515
+  },
+  "inertia":{
+   "exp":"6 kg m ^ 2",
+   "val":6.0
+  },
+  "gearing":{
+   "exp":"4.71",
+   "val":4.71
+  },
+  "radius":{
+   "exp":"1.5 in",
+   "val":0.038099999999999995
+  },
+  "vmax":{
+   "exp":"6000 RPM",
+   "val":628.3185307179587
+  },
+  "tmax":{
+   "exp":"7.09 N * m",
+   "val":7.09
+  },
+  "cof":{
+   "exp":"1.5",
+   "val":1.5
+  },
+  "bumper":{
+   "front":{
+    "exp":"16.25 in",
+    "val":0.41275
+   },
+   "side":{
+    "exp":"18.75 in",
+    "val":0.47625
+   },
+   "back":{
+    "exp":"16.25 in",
+    "val":0.41275
+   }
+  },
+  "differentialTrackWidth":{
+   "exp":"22 in",
+   "val":0.5588
+  }
+ },
+ "generationFeatures":[],
+ "codegen":{
+  "root":"../../2026CompBot/src/main/deploy/choreo",
+  "genVars":true,
+  "genTrajData":true,
+  "useChoreoLib":true
+ }
+}

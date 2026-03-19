@@ -7,6 +7,8 @@ import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
+import choreo.trajectory.SwerveSample;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -55,7 +57,8 @@ public class DriveBase extends SubsystemBase implements Sendable {
   MAXSwerveModule[] m_modules = new MAXSwerveModule[4];
   // Pigeon is on roboRIO CAN Bus with device ID 1
 
-  private final Gyro m_gyro = new Gyro(DrivetrainConstants.kUsePigeon);
+  // private final Gyro m_gyro = new Gyro(DrivetrainConstants.kUsePigeon);
+  private Gyro m_gyro;
   private SwerveDriveOdometry m_odometer;
   private Field2d m_field = new Field2d();
 
@@ -84,6 +87,7 @@ public class DriveBase extends SubsystemBase implements Sendable {
 
   /** Creates a new DriveBase. */
   public DriveBase() {
+    m_gyro = new Gyro(true);
     m_modules[0] = new MAXSwerveModule(
       DrivetrainConstants.SwerveModules.frontLeft
     );
@@ -184,13 +188,13 @@ public class DriveBase extends SubsystemBase implements Sendable {
     m_sysIdRoutine = new SysIdRoutine(m_sysIdConfig, m_sysIdMechanism);
 
     // FIXME: Needs constants
-    PIDController xPIDController = new PIDController(0, 0, 0);
-    PIDController yPIDController = new PIDController(0, 0, 0);
+    PIDController xPIDController = new PIDController(1, 0, 0);
+    PIDController yPIDController = new PIDController(1, 0, 0);
     ProfiledPIDController thetaPIDController = new ProfiledPIDController(
+      1,
       0,
       0,
-      0,
-      new Constraints(0, 0)
+      new Constraints(DrivetrainConstants.maxRotationSpeed, 15.0)
     ); // radians per second (per second)
     thetaPIDController.enableContinuousInput(-Math.PI, Math.PI);
     m_driveController = new HolonomicDriveController(
@@ -218,7 +222,7 @@ public class DriveBase extends SubsystemBase implements Sendable {
   }
 
   public Rotation2d getAngle() {
-    return m_gyro.getAngle();
+    return Rotation2d.fromDegrees(m_gyro.getYaw());
   }
 
   private double getAngleDegrees() {
@@ -287,7 +291,7 @@ public class DriveBase extends SubsystemBase implements Sendable {
     linearVelocity = linearVelocity < Constants.OperatorConstants.kTolerance
       ? 0
       : linearVelocity;
-    linearVelocity = m_translationLimiter.calculate(linearVelocity);
+    // linearVelocity = m_translationLimiter.calculate(linearVelocity);
     // rotateVelocity = m_rotationLimiter.calculate(rotateVelocity);
     forwardVelocity = Math.sin(movementAngle) * linearVelocity;
     sideVelocity = Math.cos(movementAngle) * linearVelocity;
@@ -332,16 +336,23 @@ public class DriveBase extends SubsystemBase implements Sendable {
 
   @Override
   public void periodic() {
+    m_field.setRobotPose(getPose());
     SmartDashboard.putData("Field", m_field);
     SmartDashboard.putData("FL", m_modules[0]);
     SmartDashboard.putData("FR", m_modules[1]);
     SmartDashboard.putData("BL", m_modules[2]);
     SmartDashboard.putData("BR", m_modules[3]);
     SmartDashboard.putNumber("Gyro", getAngleDegrees());
+    SmartDashboard.putNumber("Pitch", m_gyro.getPitch());
+    SmartDashboard.putNumber("Roll", m_gyro.getRoll());
   }
 
   public Pose2d getPose() {
     return m_odometer.getPoseMeters();
+  }
+
+  public void resetOdometry(Pose2d p) {
+    m_odometer.resetPose(p);
   }
 
   public Trajectory constructTrajectory(Pose2d end) {
@@ -355,6 +366,10 @@ public class DriveBase extends SubsystemBase implements Sendable {
       end,
       m_trajConfig
     );
+  }
+
+  public void applySwerveSample(SwerveSample s) {
+    applySpeeds(s.getChassisSpeeds());
   }
 
   public SwerveControllerCommand followTrajectoryCommand(
@@ -374,6 +389,9 @@ public class DriveBase extends SubsystemBase implements Sendable {
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("SwerveModule");
     builder.addDoubleProperty("gyroAngle", this::getAngleDegrees, null);
+    builder.addDoubleProperty("gyroRoll", m_gyro::getRoll, null);
+    builder.addDoubleProperty("gryoPitch", m_gyro::getPitch, null);
+
     builder.addDoubleProperty(
       "FL Heading",
       m_modules[0]::getAngleDegrees,

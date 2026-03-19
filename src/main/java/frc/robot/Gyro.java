@@ -24,16 +24,17 @@ public class Gyro extends SubsystemBase {
   private double m_yawOffsetNavX;
 
   public Gyro(boolean usePigeon) {
-    m_usePigeon = false;
-    //m_pigeon = new Pigeon2(DrivetrainConstants.pigeonID);
+    m_usePigeon = true;
+    m_pigeon = new Pigeon2(DrivetrainConstants.pigeonID);
     // StatusCode statusCode = m_pigeon.getConfigurator().apply(new Pigeon2Configuration()); // replaces .configFactoryDefault()
     // if (statusCode.isError()) {
     //   System.out.println("Pigeon2 has a problem: " + statusCode);
     //   m_pigeon = null;
     //   m_usePigeon = false;
     // }
+    m_pigeon.reset();
     m_navX = new AHRS(NavXComType.kMXP_SPI);
-    calibrateNavX();
+    // calibrateNavX();
     // m_usePigeon = Constants.Swerve.usePigeon;
     setYaw(0.0);
   }
@@ -138,5 +139,7 @@ public class Gyro extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {}
+  public void periodic() {
+    SmartDashboard.putBoolean("Using Pigeon", m_usePigeon);
+  }
 }

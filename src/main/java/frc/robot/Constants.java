@@ -36,18 +36,18 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
 
-    public static final double translationLimit = 1.0; //2.5 // for slewRateLimiters
+    public static final double translationLimit = 4; //2.5 // for slewRateLimiters
     public static final double rotationLimit = 2.0;
 
-    public static final double normalSpeed = 1; // Meters PS
-    public static final double rotationNormalSpeed = 1; // Radians PS
+    public static final double normalSpeed = 3; // Meters PS
+    public static final double rotationNormalSpeed = 4.5; // Radians PS
 
     public static final double kTolerance = 0.15;
   }
 
   public static class DrivetrainConstants {
 
-    public static final boolean kUsePigeon = false;
+    public static final boolean kUsePigeon = true;
 
     public static final Velocity<VoltageUnit> kSysIdRampRate = Volts.of(2).per(
       Second
@@ -127,10 +127,10 @@ public final class Constants {
     public static final int kIntakeRunningID = 52;
 
     public static final int kDeployedLimitSwitchPort = 0; // DIO ports for limit switches
-    public static final int kRetractedLimitSwitchPort = 1;
+    public static final int kRetractedLimitSwitchPort = 0;
 
     // PID values
-    public static final double kDeployP = 55;
+    public static final double kDeployP = 75;
     public static final double kDeployI = 2;
     public static final double kDeployD = 5;
 
@@ -150,10 +150,10 @@ public final class Constants {
       ((kMotorMaxSpeedRPM * kGearRatio) / 60.0) * kRotationsToMeters;
 
     public static final double kDeployDistanceMeters = Units.inchesToMeters(
-      12.5
+      13.5
     ); // 13.25 inches extension
     public static final double kDeployToleranceMeters = Units.inchesToMeters(
-      0.5
+      0.0
     ); //0.05); // 1 inch tolerance
 
     public static final double kDeploymentSpeed = 0.2; // % speed
@@ -187,10 +187,11 @@ public final class Constants {
     //Setpoint for PID controller //TODO: setpoint calculations
     public static final double kTopMotorMaxSpeed = 5760.0 / 5.0;
     public static final double kBottomMotorMaxSpeed = 5760.0 / 5.0;
-    public static final double kBottomMotorVelocitySetpoint = (4500.0 / 5.0); //1/2 Max rpm / gear ratio
-    public static final double kTopRollerVelocitySetpoint = (4500.0 / 3.0); //Same
+    public static final double kBottomMotorVelocitySetpoint = (5250.0 / 5.0); //1/2 Max rpm / gear ratio
+    public static final double kTopRollerVelocitySetpoint = (5250.0 / 5.0); //Same
 
-    public static final double kVoltage = 3.0;
+    public static final double kTopVoltage = 12.0;
+    public static final double kBottomVoltage = 12.0;
     public static final Velocity<VoltageUnit> kSysIdRampRate = null;
     public static final Voltage kStepVoltage = null;
     public static final Time kTimeout = null;
@@ -212,15 +213,16 @@ public final class Constants {
     public static final int kRightHoodServoChannel = 1;
 
     public static final Rotation2d kHoodLowMiddleAngle = Rotation2d.fromDegrees(
-      -66); //TODO:calculate angle
+      -66
+    ); //TODO:calculate angle
 
-    public static final Rotation2d kHoodHighMiddleAngle = Rotation2d.fromDegrees(
-      -59); //TODO:calculate angle
+    public static final Rotation2d kHoodHighMiddleAngle =
+      Rotation2d.fromDegrees(-59); //TODO:calculate angle
 
     public static final Rotation2d kHoodMinimumAngle = Rotation2d.fromDegrees(
       -74.2
     ); //Angles roughly measured
-    
+
     public static final Rotation2d kHoodMaximumAngle = Rotation2d.fromDegrees(
       -43
     );
@@ -241,7 +243,10 @@ public final class Constants {
 
     public static final double kVoltage = 6.0;
 
-    public static final double kTargetSpeed = 4000;
+    public static final double kHoodPercent = 0.45;
+
+    public static final double kTargetSpeed = 5000;
+    public static final double kTargetLowSpeed = 4250;
 
     //Sysid shtuff
 

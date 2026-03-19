@@ -22,6 +22,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutAngularVelocity;
@@ -43,6 +44,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.ShooterConstants;
+import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase {
 
@@ -54,6 +56,7 @@ public class Shooter extends SubsystemBase {
     public Hood(int leftChannel, int rightChannel) {
       m_leftHoodServo = new Servo(leftChannel);
       m_rightHoodServo = new Servo(rightChannel);
+      setPercent(ShooterConstants.kHoodPercent);
     }
 
     /**Clamps the angle to the max + min values,
@@ -77,6 +80,16 @@ public class Shooter extends SubsystemBase {
       m_leftHoodServo.set(percent);
       m_rightHoodServo.set(percent);
     }
+
+    public void setPercent(double p) {
+      p = MathUtil.clamp(p, 0.0, 1.0);
+      m_leftHoodServo.set(p);
+      m_rightHoodServo.set(p);
+    }
+
+    public double getPercent() {
+      return m_leftHoodServo.get();
+    }
   }
 
   private final SparkMax m_leadShooterMotor = new SparkMax(
@@ -99,11 +112,16 @@ public class Shooter extends SubsystemBase {
     ShooterConstants.kD
   );
 
-  private final SimpleMotorFeedforward m_shooterFFController = new SimpleMotorFeedforward(
-    ShooterConstants.kS, ShooterConstants.kV, ShooterConstants.kA);
+  private final SimpleMotorFeedforward m_shooterFFController =
+    new SimpleMotorFeedforward(
+      ShooterConstants.kS,
+      ShooterConstants.kV,
+      ShooterConstants.kA
+    );
 
   private final Hood m_hood;
 
+  private double speed = ShooterConstants.kTargetSpeed;
   private Config m_sysIdConfig;
   private Mechanism m_sysIdMechanism;
   private SysIdRoutine m_sysIdRoutine;
@@ -111,6 +129,9 @@ public class Shooter extends SubsystemBase {
   private final MutVoltage m_appliedVoltage = Volts.mutable(0);
   private final MutAngle m_angle = Rotations.mutable(0);
   private final MutAngularVelocity m_velocity = RPM.mutable(0);
+
+  private double m_hoodPercentOut = 0.0;
+  private SlewRateLimiter m_hoodPercentLimiter = new SlewRateLimiter(1.0 / 5.0);
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -136,6 +157,7 @@ public class Shooter extends SubsystemBase {
     );
 
     m_shooterEncoder = m_leadShooterMotor.getEncoder();
+    SmartDashboard.putNumber("ShootSpeed", ShooterConstants.kTargetSpeed);
 
     m_hood = new Hood(
       ShooterConstants.kLeftHoodServoChannel,
@@ -183,14 +205,26 @@ public class Shooter extends SubsystemBase {
   }
 
   public void shoot() {
-    double ff =
-      m_shooterFFController.calculate(ShooterConstants.kTargetSpeed);
-    double fb = m_shooterPIDController.calculate(
-      m_shooterEncoder.getVelocity(),
-      ShooterConstants.kTargetSpeed
-    ); //encoder rpm / 60 = rps
-    double volts = ff + fb;
-    m_leadShooterMotor.setVoltage(volts);
+    // double ff = m_shooterFFController.calculate(speed);
+    // double fb = m_shooterPIDController.calculate(
+    //   m_shooterEncoder.getVelocity(),
+    //   speed
+    // ); //encoder rpm / 60 = rps
+    // double fb = 0;
+    // double volts = ff + fb;
+    m_leadShooterMotor.setVoltage((speed / ShooterConstants.kMaxSpeed) * 12);
+  }
+
+  public void lowShoot() {
+    m_leadShooterMotor.setVoltage(
+      (ShooterConstants.kTargetLowSpeed / ShooterConstants.kMaxSpeed) * 12
+    );
+  }
+
+  public void shooterSpeedControl(DoubleSupplier supplier) {
+    double val = supplier.getAsDouble();
+    val = (Math.abs(val) < 0.2) ? 0 : val;
+    this.speed += val * 2.0;
   }
 
   public void stop() {
@@ -203,6 +237,14 @@ public class Shooter extends SubsystemBase {
     m_leadShooterMotor.setVoltage(-Constants.ShooterConstants.kVoltage);
   }
 
+  public void raiseHood() {
+    m_hood.setPercent(m_hood.getPercent() + 0.005);
+  }
+
+  public void lowerHood() {
+    m_hood.setPercent(m_hood.getPercent() - 0.005);
+  }
+
   public Command getSysIDCommand() {
     return new SequentialCommandGroup(
       m_sysIdRoutine.dynamic(Direction.kForward),
@@ -213,7 +255,18 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command getSetHoodCommand(Rotation2d angle) {
-    return new InstantCommand(() -> {setHoodAngle(angle);}, this);
+    return new InstantCommand(
+      () -> {
+        setHoodAngle(angle);
+      },
+      this
+    );
+  }
+
+  public Command getSetHoodPercentCommand(double p) {
+    return new InstantCommand(() -> {
+      m_hood.setPercent(p);
+    });
   }
 
   public Command getShootCommand(double time) {
@@ -226,6 +279,12 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("ShooterRot", m_shooterEncoder.getPosition());
     SmartDashboard.putNumber("ShooterRPM", m_shooterEncoder.getVelocity());
+    SmartDashboard.putNumber("HoodPercent", m_hood.getPercent());
+    SmartDashboard.putNumber("Target Speed", speed);
+    // speed = SmartDashboard.getNumber(
+    //   "ShootSpeed",
+    //   ShooterConstants.kTargetSpeed
+    // );
     // This method will be called onc  per scheduler run
   }
 }
