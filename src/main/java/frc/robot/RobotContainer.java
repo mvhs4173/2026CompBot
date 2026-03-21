@@ -25,6 +25,7 @@ import frc.robot.commands.LTrenchCenterDoubleDip;
 import frc.robot.commands.LTrenchCenterShoot;
 import frc.robot.commands.LockTarget;
 import frc.robot.commands.RTrenchCenterShoot;
+import frc.robot.commands.Autos.Shoot;
 import frc.robot.subsystems.DriveBase;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
@@ -102,6 +103,10 @@ public class RobotContainer {
     //   )
     // );
 
+    //Simple auto(s)
+    m_autoChooser.addOption("Shoot Auto", new Shoot(m_shooter, m_indexer));
+
+    //Fancy autos
     m_autoChooser.addOption(
       "HubOutpostShoot",
       new HubOutpostShoot(m_driveBase, m_intake, m_shooter, m_indexer)

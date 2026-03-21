@@ -341,6 +341,12 @@ public class Indexer extends SubsystemBase {
     indexIn();
   }
 
+
+  /**
+   * runs top and bottom indexers
+   * @param time time to run for
+   * @return command
+   */
   public Command getIndexCommand(double time) {
     return new RunCommand(this::runBothIndexers, this).withTimeout(time);
   }
