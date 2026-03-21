@@ -269,10 +269,12 @@ public class Shooter extends SubsystemBase {
     });
   }
 
+  public Command getShootCommand() {
+    return new RunCommand(this::shoot, this).finallyDo(this::stop);
+  }
+
   public Command getShootCommand(double time) {
-    return new RunCommand(this::shoot, this)
-      .withTimeout(time)
-      .finallyDo(this::stop);
+    return getShootCommand().withTimeout(time);
   }
 
   @Override

@@ -20,12 +20,12 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.Autos.Shoot;
 import frc.robot.commands.HubOutpostShoot;
 import frc.robot.commands.LTrenchCenterDoubleDip;
 import frc.robot.commands.LTrenchCenterShoot;
 import frc.robot.commands.LockTarget;
 import frc.robot.commands.RTrenchCenterShoot;
-import frc.robot.commands.Autos.Shoot;
 import frc.robot.subsystems.DriveBase;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
@@ -244,11 +244,7 @@ public class RobotContainer {
     //Index in
     m_operatorController
       .leftBumper()
-      .whileTrue(
-        new RunCommand(m_indexer::runBothIndexers).finallyDo(
-          m_indexer::indexStop
-        )
-      );
+      .whileTrue(new RunCommand(m_indexer::runBothIndexers));
 
     m_operatorController
       .y()
@@ -264,19 +260,15 @@ public class RobotContainer {
       .rightTrigger()
       .whileTrue(
         new ParallelCommandGroup(
-          new RunCommand(m_indexer::runBothIndexers).finallyDo(
-            m_indexer::indexStop
-          ),
-          new RunCommand(m_shooter::shoot, m_shooter).finallyDo(m_shooter::stop)
+          new RunCommand(m_indexer::runBothIndexers),
+          m_shooter.getShootCommand()
         )
       );
     m_operatorController
       .leftTrigger()
       .whileTrue(
         new ParallelCommandGroup(
-          new RunCommand(m_indexer::runBothIndexers).finallyDo(
-            m_indexer::indexStop
-          ),
+          new RunCommand(m_indexer::runBothIndexers),
           new RunCommand(m_shooter::lowShoot, m_shooter).finallyDo(
             m_shooter::stop
           )

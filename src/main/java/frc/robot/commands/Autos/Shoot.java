@@ -27,7 +27,7 @@ public class Shoot extends SequentialCommandGroup {
       new ParallelCommandGroup(
         m_indexer.getIndexCommand(5),
         m_shooter.getShootCommand(5)
-      )
+      ).withTimeout(5)
     );
   }
 }

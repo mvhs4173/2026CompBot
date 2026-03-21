@@ -348,7 +348,7 @@ public class Indexer extends SubsystemBase {
    * @return command
    */
   public Command getIndexCommand(double time) {
-    return new RunCommand(this::runBothIndexers, this).withTimeout(time);
+    return new RunCommand(this::runBothIndexers, this).withTimeout(time).andThen(new InstantCommand(this::indexStop));
   }
 
   @Override

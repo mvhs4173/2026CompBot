@@ -9,9 +9,11 @@ import static edu.wpi.first.units.Units.Volts;
 
 import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.hardware.Pigeon2;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -33,6 +35,8 @@ import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -47,6 +51,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Gyro;
+import frc.robot.LimelightHelpers;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -59,7 +64,7 @@ public class DriveBase extends SubsystemBase implements Sendable {
 
   // private final Gyro m_gyro = new Gyro(DrivetrainConstants.kUsePigeon);
   private Gyro m_gyro;
-  private SwerveDriveOdometry m_odometer;
+  private SwerveDrivePoseEstimator m_odometer;
   private Field2d m_field = new Field2d();
 
   private SlewRateLimiter m_translationLimiter = new SlewRateLimiter(
@@ -84,6 +89,7 @@ public class DriveBase extends SubsystemBase implements Sendable {
   private final MutAngularVelocity m_velocity = RPM.mutable(0);
 
   private HolonomicDriveController m_driveController;
+  private Rotation2d m_fieldOffSetAngle;
 
   /** Creates a new DriveBase. */
   public DriveBase() {
@@ -107,12 +113,15 @@ public class DriveBase extends SubsystemBase implements Sendable {
       DrivetrainConstants.SwerveModules.backRight.wheelPos
     );
 
+    m_fieldOffSetAngle = new Rotation2d();
+
     resetGyro();
 
-    m_odometer = new SwerveDriveOdometry(
+    m_odometer = new SwerveDrivePoseEstimator(
       m_swerveDriveKinematics,
-      new Rotation2d(),
-      getModulePositions()
+      m_fieldOffSetAngle,
+      getModulePositions(),
+      new Pose2d()
     );
 
     m_sysIdConfig = new Config(
@@ -225,6 +234,10 @@ public class DriveBase extends SubsystemBase implements Sendable {
     return Rotation2d.fromDegrees(m_gyro.getYaw());
   }
 
+  public Rotation2d getFieldAngle() {
+    return getAngle().minus(m_fieldOffSetAngle);
+  }
+
   private double getAngleDegrees() {
     return getAngle().getDegrees();
   }
@@ -334,8 +347,32 @@ public class DriveBase extends SubsystemBase implements Sendable {
       .toArray(SwerveModulePosition[]::new);
   }
 
+  public void overrideFieldAngleOffset(Rotation2d imuRACSConvertion) {
+    m_fieldOffSetAngle = imuRACSConvertion;
+  }
+
+  public void overridePose(Pose2d pose) {
+    m_odometer.resetPose(pose);
+  }
+
   @Override
   public void periodic() {
+    LimelightHelpers.SetRobotOrientation(
+      "",
+      (getFieldAngle().getDegrees() + (DriverStation.getAlliance().get() == Alliance.Red ? 180 : 0)) % 360,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    );
+    LimelightHelpers.PoseEstimate limelightMeasurement =
+      LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+    m_odometer.setVisionMeasurementStdDevs(VecBuilder.fill(.5, .5, 9999999));
+    m_odometer.addVisionMeasurement(
+      limelightMeasurement.pose,
+      limelightMeasurement.timestampSeconds
+    );
     m_field.setRobotPose(getPose());
     SmartDashboard.putData("Field", m_field);
     SmartDashboard.putData("FL", m_modules[0]);
@@ -348,7 +385,8 @@ public class DriveBase extends SubsystemBase implements Sendable {
   }
 
   public Pose2d getPose() {
-    return m_odometer.getPoseMeters();
+    m_odometer.update(getAngle(), getModulePositions());
+    return m_odometer.getEstimatedPosition();
   }
 
   public void resetOdometry(Pose2d p) {

@@ -124,6 +124,7 @@ public class Intake extends SubsystemBase {
     m_rightDeploymentPIDController.setTolerance(
       IntakeConstants.kDeployToleranceMeters
     );
+    SmartDashboard.putBoolean("Override Deployed", false);
   }
 
   // Running
@@ -284,6 +285,15 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if (SmartDashboard.getBoolean("Override Deployed", false)) {
+      m_leftDeployEncoder.setPosition(
+        (IntakeConstants.kDeployDistanceMeters / 0.0127) * 2
+      );
+      m_rightDeployEncoder.setPosition(
+        (IntakeConstants.kDeployDistanceMeters / 0.0127) * 2
+      );
+      SmartDashboard.putBoolean("Override Deployed", false);
+    }
     SmartDashboard.putBoolean("Retracted", m_retractedLimitSwitch.get());
     // This method will be called once per scheduler run
     SmartDashboard.putNumber(
