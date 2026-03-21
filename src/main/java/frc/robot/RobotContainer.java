@@ -23,6 +23,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.HubOutpostShoot;
 import frc.robot.commands.LTrenchCenterDoubleDip;
 import frc.robot.commands.LTrenchCenterShoot;
+import frc.robot.commands.LockTarget;
 import frc.robot.commands.RTrenchCenterShoot;
 import frc.robot.subsystems.DriveBase;
 import frc.robot.subsystems.Indexer;
@@ -85,7 +86,6 @@ public class RobotContainer {
             !m_driverController.leftBumper().getAsBoolean(),
             m_driverController.rightTrigger().getAsBoolean()
           );
-          
         },
         m_driveBase
       )
@@ -156,9 +156,20 @@ public class RobotContainer {
     //       m_driveBase
     //     )
     //   );
+
     m_driverController
       .y()
       .onTrue(new InstantCommand(m_driveBase::resetGyro, m_driveBase));
+
+    m_driverController
+      .rightBumper()
+      .whileTrue(
+        new LockTarget(
+          m_driveBase,
+          m_driverController::getLeftX,
+          m_driverController::getLeftY
+        )
+      );
 
     //Operator
 

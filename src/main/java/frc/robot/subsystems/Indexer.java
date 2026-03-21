@@ -283,6 +283,9 @@ public class Indexer extends SubsystemBase {
     m_leadIndexMotor.setVoltage(IndexerConstants.kBottomVoltage);
   }
 
+  /**
+   * stops both index motors
+   */
   public void indexStop() {
     m_leadIndexMotor.setVoltage(0.0);
     m_topRollerMotor.setVoltage(0);
