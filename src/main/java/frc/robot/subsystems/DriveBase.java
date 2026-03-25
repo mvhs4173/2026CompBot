@@ -231,7 +231,7 @@ public class DriveBase extends SubsystemBase implements Sendable {
   }
 
   public Rotation2d getAngle() {
-    return Rotation2d.fromDegrees(m_gyro.getYaw());
+    return Rotation2d.fromDegrees(m_gyro.getYaw()).unaryMinus();
   }
 
   public Rotation2d getFieldAngle() {
@@ -263,6 +263,7 @@ public class DriveBase extends SubsystemBase implements Sendable {
     boolean fieldOrient,
     boolean boost
   ) {
+    SmartDashboard.putBoolean("Boosted", boost);
     double forwardVelocity = boost
       ? forward * DrivetrainConstants.maxSpeed
       : forward * OperatorConstants.normalSpeed;
@@ -359,7 +360,9 @@ public class DriveBase extends SubsystemBase implements Sendable {
   public void periodic() {
     LimelightHelpers.SetRobotOrientation(
       "",
-      (getFieldAngle().getDegrees() + (DriverStation.getAlliance().get() == Alliance.Red ? 180 : 0)) % 360,
+      (getFieldAngle().getDegrees() +
+        (DriverStation.getAlliance().get() == Alliance.Red ? 180 : 0)) %
+      360,
       0.0,
       0.0,
       0.0,

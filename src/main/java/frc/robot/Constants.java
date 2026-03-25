@@ -234,27 +234,27 @@ public final class Constants {
 
     public static final double kMaxSpeed = 5676.0;
 
-    public static final double kP = 0.037803;
+    public static final double kP = 0.055;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
-    public static final double kS = 0.19316;
-    public static final double kV = 0.12726;
-    public static final double kA = 0.038209;
+    public static final double kS = 0.21823;
+    public static final double kV = 0.12595;
+    public static final double kA = 0.039124;
 
     public static final double kVoltage = 6.0;
 
-    public static final double kHoodPercent = 0.45;
+    public static final double kHoodPercent = 0.5; //OG 0.45
 
-    public static final double kTargetSpeed = 5000;
+    public static final double kTargetSpeed = 4000; //OG 5000
     public static final double kTargetLowSpeed = 4250;
 
     //Sysid shtuff
 
-    public static final Velocity<VoltageUnit> kSysIdRampRate = Volts.of(1).per(
+    public static final Velocity<VoltageUnit> kSysIdRampRate = Volts.of(2).per(
       Second
     );
     public static final Voltage kStepVoltage = Volts.of(8.5);
-    public static final Time kTimeout = Time.ofBaseUnits(20, Seconds);
+    public static final Time kTimeout = Time.ofBaseUnits(10, Seconds);
   }
 
   public static class AutoConstants {}

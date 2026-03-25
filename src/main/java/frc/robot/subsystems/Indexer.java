@@ -336,9 +336,18 @@ public class Indexer extends SubsystemBase {
     );
   }
 
-  public void runBothIndexers() {
+  private void runBothIndexers() {
     topRollerIn();
     indexIn();
+  }
+
+  public Command getIndexCommand() {
+    return new RunCommand(this::runBothIndexers, this).andThen(new InstantCommand(this::indexStop));
+
+  }
+
+  public Command getStopCommand() {
+    return new InstantCommand(this::indexStop, this);
   }
 
 

@@ -127,6 +127,8 @@ public class RobotContainer {
       "LTrenchCenterShoot",
       new LTrenchCenterShoot(m_driveBase, m_intake, m_shooter, m_indexer)
     );
+
+    m_autoChooser.addOption("ShootSysID", m_shooter.getSysIDCommand());
     SmartDashboard.putData("Autos", m_autoChooser);
     // m_fieldTest.setRobotPose(huOuShTrajectory.getInitialPose());
   }
@@ -215,19 +217,11 @@ public class RobotContainer {
 
     m_operatorController
       .povLeft()
-      .onTrue(
-        m_shooter.getSetHoodCommand(
-          Constants.ShooterConstants.kHoodLowMiddleAngle
-        )
-      );
+      .onTrue(m_shooter.getSetHoodPercentCommand(0.1));
 
     m_operatorController
       .povRight()
-      .onTrue(
-        m_shooter.getSetHoodCommand(
-          Constants.ShooterConstants.kHoodHighMiddleAngle
-        )
-      );
+      .onTrue(m_shooter.getSetHoodPercentCommand(0.5));
 
     m_operatorController
       .povDown()
@@ -244,7 +238,8 @@ public class RobotContainer {
     //Index in
     m_operatorController
       .leftBumper()
-      .whileTrue(new RunCommand(m_indexer::runBothIndexers));
+      .whileTrue(m_indexer.getIndexCommand())
+      .onFalse(m_indexer.getStopCommand());
 
     m_operatorController
       .y()
@@ -260,20 +255,22 @@ public class RobotContainer {
       .rightTrigger()
       .whileTrue(
         new ParallelCommandGroup(
-          new RunCommand(m_indexer::runBothIndexers),
+          m_indexer.getIndexCommand(),
           m_shooter.getShootCommand()
         )
-      );
+      )
+      .onFalse(m_indexer.getStopCommand());
     m_operatorController
       .leftTrigger()
       .whileTrue(
         new ParallelCommandGroup(
-          new RunCommand(m_indexer::runBothIndexers),
+          m_indexer.getIndexCommand(),
           new RunCommand(m_shooter::lowShoot, m_shooter).finallyDo(
             m_shooter::stop
           )
         )
-      );
+      )
+      .onFalse(m_indexer.getStopCommand());
   }
 
   /**

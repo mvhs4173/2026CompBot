@@ -125,6 +125,7 @@ public class Intake extends SubsystemBase {
       IntakeConstants.kDeployToleranceMeters
     );
     SmartDashboard.putBoolean("Override Deployed", false);
+    SmartDashboard.putBoolean("Override Retracted", false);
   }
 
   // Running
@@ -294,11 +295,20 @@ public class Intake extends SubsystemBase {
       );
       SmartDashboard.putBoolean("Override Deployed", false);
     }
+    if (SmartDashboard.getBoolean("Override Retracted", false)) {
+      m_leftDeployEncoder.setPosition(0);
+      m_rightDeployEncoder.setPosition(0);
+      SmartDashboard.putBoolean("Override Retracted", false);
+    }
     SmartDashboard.putBoolean("Retracted", m_retractedLimitSwitch.get());
     // This method will be called once per scheduler run
     SmartDashboard.putNumber(
-      "Intake Deployment Extension Inches",
+      "Intake Left Deployment Extension Inches",
       Units.metersToInches(getLeftDeploymentExtensionMeters())
+    );
+    SmartDashboard.putNumber(
+      "Intake Right Deployment Extension Inches",
+      Units.metersToInches(getRightDeploymentExtensionMeters())
     );
     SmartDashboard.putBoolean("DepStatus", m_deploymentStatus);
     SmartDashboard.putBoolean("isdeployed", isDeployed());
@@ -306,6 +316,11 @@ public class Intake extends SubsystemBase {
     SmartDashboard.putNumber(
       "IntakeRPM",
       m_runningMotor.getEncoder().getVelocity() / 3.0
+    );
+
+    SmartDashboard.putNumber(
+      "IntakeCurrent",
+      m_runningMotor.getOutputCurrent()
     );
 
     SmartDashboard.putNumber(

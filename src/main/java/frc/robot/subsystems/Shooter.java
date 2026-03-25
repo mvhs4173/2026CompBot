@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 //import java.io.ObjectInputFilter.Config;
@@ -56,6 +57,8 @@ public class Shooter extends SubsystemBase {
     public Hood(int leftChannel, int rightChannel) {
       m_leftHoodServo = new Servo(leftChannel);
       m_rightHoodServo = new Servo(rightChannel);
+      m_leftHoodServo.enableDeadbandElimination(true);
+      m_rightHoodServo.enableDeadbandElimination(true);
       setPercent(ShooterConstants.kHoodPercent);
     }
 
@@ -171,7 +174,7 @@ public class Shooter extends SubsystemBase {
     );
 
     m_sysIdMechanism = new Mechanism(
-      this::applyVolts,
+      m_leadShooterMotor::setVoltage,
       log -> {
         log
           .motor("Lead shoot (Left)")
@@ -186,7 +189,10 @@ public class Shooter extends SubsystemBase {
             m_angle.mut_replace(m_shooterEncoder.getPosition(), Rotations)
           )
           .angularVelocity(
-            m_velocity.mut_replace(m_shooterEncoder.getVelocity(), RPM)
+            m_velocity.mut_replace(
+              m_shooterEncoder.getVelocity() / 60.0,
+              RotationsPerSecond
+            )
           );
       },
       this,
@@ -196,23 +202,20 @@ public class Shooter extends SubsystemBase {
     m_sysIdRoutine = new SysIdRoutine(m_sysIdConfig, m_sysIdMechanism);
   }
 
-  public void applyVolts(Voltage v) {
-    m_leadShooterMotor.setVoltage(v);
-  }
-
   public void setHoodAngle(Rotation2d angle) {
     m_hood.set(angle);
   }
 
   public void shoot() {
-    // double ff = m_shooterFFController.calculate(speed);
-    // double fb = m_shooterPIDController.calculate(
-    //   m_shooterEncoder.getVelocity(),
-    //   speed
-    // ); //encoder rpm / 60 = rps
+    double ff = m_shooterFFController.calculate(speed / 60.0);
+    double fb = m_shooterPIDController.calculate(
+      m_shooterEncoder.getVelocity() / 60.0,
+      speed / 60.0
+    ); //encoder rpm / 60 = rps
     // double fb = 0;
-    // double volts = ff + fb;
-    m_leadShooterMotor.setVoltage((speed / ShooterConstants.kMaxSpeed) * 12);
+    double volts = ff + fb;
+    m_leadShooterMotor.setVoltage(volts);
+    // m_leadShooterMotor.setVoltage((speed / ShooterConstants.kMaxSpeed) * 12);
   }
 
   public void lowShoot() {

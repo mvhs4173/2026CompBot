@@ -218,7 +218,7 @@ public class MAXSwerveModule implements Sendable {
 
   private double convertRPMtoMPS(double rotationsPerMinute) {
     return (
-      (rotationsPerMinute * Units.inchesToMeters(3 * Math.PI)) / 4.71 / 60.0
+      ((rotationsPerMinute * Units.inchesToMeters(3 * Math.PI)) / 4.71 )/ 60.0
     );
   }
 
@@ -240,5 +240,8 @@ public class MAXSwerveModule implements Sendable {
     builder.addDoubleProperty("driveCurrent", this::getDriveCurrent, null);
     builder.addDoubleProperty("turnVoltage", this::getTurnVoltage, null);
     builder.addDoubleProperty("turnCurrent", this::getTurnCurrent, null);
+    builder.addDoubleProperty("distanceMeters", this::getDistanceMeters, null);
+    builder.addDoubleProperty("rawEncoderPosition", this::getRawEncoderPosition, null);
+    builder.addDoubleProperty("rawEncoderVelocity", this::getRawEncoderVelocity, null);
   }
 }

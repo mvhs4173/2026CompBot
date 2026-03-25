@@ -35,15 +35,12 @@ public class Robot extends TimedRobot {
     // and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
-  }
-
-  @Override
-  public void robotInit() {
-    DataLogManager.start();
-    DriverStation.startDataLog(DataLogManager.getLog());
     LimelightHelpers.setupPortForwardingUSB(0);
     LimelightHelpers.setupPortForwardingUSB(1);
+    DataLogManager.start();
+    DriverStation.startDataLog(DataLogManager.getLog());
   }
+
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items
