@@ -24,12 +24,13 @@ public class Shoot extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      m_shooter.getSetHoodPercentCommand(0.50).withTimeout(2),
-      m_shooter.getShootCommand(1),
+      m_shooter.getSetHoodPercentCommand(0.48).withTimeout(3),
+      m_shooter.getShootCommand(2),
       new ParallelCommandGroup(
         m_indexer.getIndexCommand(5),
         m_shooter.getShootCommand(5)
-      ).withTimeout(5)
+      ).withTimeout(5),
+      m_indexer.getStopCommand()
     );
   }
 }

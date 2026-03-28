@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
@@ -217,11 +218,11 @@ public class RobotContainer {
 
     m_operatorController
       .povLeft()
-      .onTrue(m_shooter.getSetHoodPercentCommand(0.1));
+      .onTrue(m_shooter.getSetHoodPercentCommand(0.75));
 
     m_operatorController
       .povRight()
-      .onTrue(m_shooter.getSetHoodPercentCommand(0.5));
+      .onTrue(m_shooter.getSetHoodPercentCommand(0.48));
 
     m_operatorController
       .povDown()
@@ -254,9 +255,12 @@ public class RobotContainer {
     m_operatorController
       .rightTrigger()
       .whileTrue(
-        new ParallelCommandGroup(
-          m_indexer.getIndexCommand(),
-          m_shooter.getShootCommand()
+        new SequentialCommandGroup(
+          m_shooter.getShootCommand(1),
+          new ParallelCommandGroup(
+            m_indexer.getIndexCommand(),
+            m_shooter.getShootCommand()
+          )
         )
       )
       .onFalse(m_indexer.getStopCommand());
