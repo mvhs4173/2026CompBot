@@ -245,7 +245,8 @@ public final class Constants {
 
     public static final double kHoodPercent = 0.5; //OG 0.45
 
-    public static final double kTargetSpeed = 4000; //OG 5000
+    public static final double kTargetSpeed = 3800; //OG 4000
+    public static final double kPassingSpeed = 5500; //OG 4000
     public static final double kTargetLowSpeed = 4250;
 
     //Sysid shtuff

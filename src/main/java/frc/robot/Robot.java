@@ -24,6 +24,7 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
+  public boolean hasRunCleanup = false;
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -40,7 +41,6 @@ public class Robot extends TimedRobot {
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());
   }
-
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items
@@ -66,7 +66,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    hasRunCleanup = false;
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -103,7 +105,12 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if (DriverStation.getMatchTime() < 5.0 && !hasRunCleanup) {
+      m_robotContainer.endMatchCleanup();
+      hasRunCleanup = true;
+    }
+  }
 
   @Override
   public void testInit() {

@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.Autos.HubShoot;
 import frc.robot.commands.Autos.Shoot;
 import frc.robot.commands.HubOutpostShoot;
 import frc.robot.commands.LTrenchCenterDoubleDip;
@@ -34,6 +35,7 @@ import frc.robot.subsystems.Shooter;
 import java.io.File;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
+import java.util.function.BooleanSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -63,12 +65,15 @@ public class RobotContainer {
   private final CommandXboxController m_operatorController =
     new CommandXboxController(OperatorConstants.kOperatorControllerPort);
 
+  double angleOverrideDegrees = 0;
+
   //CommandXboxController m_operatorController = m_driverController;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    SmartDashboard.putNumber("Angle Override Deg", angleOverrideDegrees);
     autoFactory = new AutoFactory(
       m_driveBase::getPose,
       m_driveBase::resetOdometry,
@@ -106,6 +111,11 @@ public class RobotContainer {
 
     //Simple auto(s)
     m_autoChooser.addOption("Shoot Auto", new Shoot(m_shooter, m_indexer));
+
+    m_autoChooser.addOption(
+      "HubShoot Auto",
+      new HubShoot(m_shooter, m_indexer)
+    );
 
     //Fancy autos
     m_autoChooser.addOption(
@@ -148,8 +158,16 @@ public class RobotContainer {
    * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
+
+   private boolean getAngleUpdated() {
+    return angleOverrideDegrees != SmartDashboard.getNumber("Angle Override Deg", angleOverrideDegrees);
+   }
+
+   private void resetGyroToSD() {
+    m_driveBase.resetGyro(SmartDashboard.getNumber("Angle Override Deg", angleOverrideDegrees));
+   }
   private void configureBindings() {
-    // m_driverController
+    new Trigger(this::getAngleUpdated).onTrue(new InstantCommand(this::resetGyroToSD));
     //   .povDown()
     //   .whileTrue(
     //     new RunCommand(
@@ -169,15 +187,15 @@ public class RobotContainer {
       .y()
       .onTrue(new InstantCommand(m_driveBase::resetGyro, m_driveBase));
 
-    m_driverController
-      .rightBumper()
-      .whileTrue(
-        new LockTarget(
-          m_driveBase,
-          m_driverController::getLeftX,
-          m_driverController::getLeftY
-        )
-      );
+    // m_driverController
+    //   .rightBumper()
+    //   .whileTrue(
+    //     new LockTarget(
+    //       m_driveBase,
+    //       m_driverController::getLeftX,
+    //       m_driverController::getLeftY
+    //     )
+    //   );
 
     //Operator
 
@@ -214,11 +232,12 @@ public class RobotContainer {
     m_operatorController
       .povUp()
       // .onTrue(m_shooter.getSetHoodCommand(Constants.ShooterConstants.kHoodMaximumAngle));
-      .whileTrue(new RunCommand(m_shooter::raiseHood, m_shooter));
+      //.whileTrue(new RunCommand(m_shooter::raiseHood, m_shooter));
+      .onTrue(m_shooter.getSetHoodPercentCommand(0.32));
 
     m_operatorController
       .povLeft()
-      .onTrue(m_shooter.getSetHoodPercentCommand(0.75));
+      .onTrue(m_shooter.getSetHoodPercentCommand(0.66));
 
     m_operatorController
       .povRight()
@@ -290,4 +309,6 @@ public class RobotContainer {
   public void zeroYaw() {
     m_driveBase.resetGyro();
   }
+
+  public void endMatchCleanup() {}
 }

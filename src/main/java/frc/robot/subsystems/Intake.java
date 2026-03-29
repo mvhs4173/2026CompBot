@@ -49,6 +49,11 @@ public class Intake extends SubsystemBase {
   private SparkMaxConfig m_leftDeployConfig = new SparkMaxConfig();
   private SparkMaxConfig m_rightDeployConfig = new SparkMaxConfig();
   private SparkMaxConfig m_runningConfig = new SparkMaxConfig();
+  private PIDController m_deplyDifferenceController = new PIDController(
+    75,
+    0,
+    0
+  );
 
   private EncoderConfig m_leftDeployEncoderConfig = new EncoderConfig();
   private EncoderConfig m_rightDeployEncoderConfig = new EncoderConfig();
@@ -124,6 +129,8 @@ public class Intake extends SubsystemBase {
     m_rightDeploymentPIDController.setTolerance(
       IntakeConstants.kDeployToleranceMeters
     );
+
+    m_deplyDifferenceController.setSetpoint(0);
     SmartDashboard.putBoolean("Override Deployed", false);
     SmartDashboard.putBoolean("Override Retracted", false);
   }
@@ -191,10 +198,10 @@ public class Intake extends SubsystemBase {
    */
   private boolean isRetracted() {
     return (
-      m_deploymentStatus = m_retractedLimitSwitch.get()
-      //  ||
-      // Math.abs(getLeftDeploymentExtensionMeters()) <
-      // IntakeConstants.kDeployToleranceMeters
+      m_deploymentStatus =
+        m_retractedLimitSwitch.get() ||
+        Math.abs(getLeftDeploymentExtensionMeters()) <
+        Units.inchesToMeters(1)
     );
   }
 
@@ -232,8 +239,12 @@ public class Intake extends SubsystemBase {
       IntakeConstants.kDeployDistanceMeters
     );
 
-    m_leftDeployMotor.setVoltage(leftVolts);
-    m_rightDeployMotor.setVoltage(rightVolts);
+    double deployCorrection = m_deplyDifferenceController.calculate(
+      getLeftDeploymentExtensionMeters() - getRightDeploymentExtensionMeters()
+    );
+
+    m_leftDeployMotor.setVoltage(leftVolts + deployCorrection);
+    m_rightDeployMotor.setVoltage(rightVolts - deployCorrection);
   }
 
   /**
@@ -274,7 +285,7 @@ public class Intake extends SubsystemBase {
   public Command getRetractCommand() {
     return new RunCommand(this::retract, this)
       .until(this::isRetracted)
-      .withTimeout(4)
+      .withTimeout(3)
       .finallyDo(this::stopDeployMotors);
   }
 

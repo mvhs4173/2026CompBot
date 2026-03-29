@@ -207,6 +207,9 @@ public class Shooter extends SubsystemBase {
   }
 
   public void shoot() {
+    double speed = m_hood.getPercent() > 0.5
+      ? ShooterConstants.kPassingSpeed
+      : ShooterConstants.kTargetSpeed;
     double ff = m_shooterFFController.calculate(speed / 60.0);
     double fb = m_shooterPIDController.calculate(
       m_shooterEncoder.getVelocity() / 60.0,
@@ -219,9 +222,15 @@ public class Shooter extends SubsystemBase {
   }
 
   public void lowShoot() {
-    m_leadShooterMotor.setVoltage(
-      (ShooterConstants.kTargetLowSpeed / ShooterConstants.kMaxSpeed) * 12
-    );
+    double speed = 3500;
+    double ff = m_shooterFFController.calculate(speed / 60.0);
+    double fb = m_shooterPIDController.calculate(
+      m_shooterEncoder.getVelocity() / 60.0,
+      speed / 60.0
+    ); //encoder rpm / 60 = rps
+    // double fb = 0;
+    double volts = ff + fb;
+    m_leadShooterMotor.setVoltage(volts);
   }
 
   public void shooterSpeedControl(DoubleSupplier supplier) {
@@ -270,6 +279,10 @@ public class Shooter extends SubsystemBase {
     return new InstantCommand(() -> {
       m_hood.setPercent(p);
     });
+  }
+
+  public void setSpeed(double speed) {
+    this.speed = speed;
   }
 
   public Command getShootCommand() {

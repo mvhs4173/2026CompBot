@@ -91,6 +91,8 @@ public class DriveBase extends SubsystemBase implements Sendable {
   private HolonomicDriveController m_driveController;
   private Rotation2d m_fieldOffSetAngle;
 
+  Rotation2d offset = Rotation2d.kZero;
+
   /** Creates a new DriveBase. */
   public DriveBase() {
     m_gyro = new Gyro(true);
@@ -230,8 +232,12 @@ public class DriveBase extends SubsystemBase implements Sendable {
     m_gyro.resetGyro();
   }
 
+  public void resetGyro(double val) {
+    offset = Rotation2d.fromDegrees(val);
+  }
+
   public Rotation2d getAngle() {
-    return Rotation2d.fromDegrees(m_gyro.getYaw()).unaryMinus();
+    return Rotation2d.fromDegrees(m_gyro.getYaw()).plus(offset).unaryMinus();
   }
 
   public Rotation2d getFieldAngle() {
