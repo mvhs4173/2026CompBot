@@ -139,7 +139,5 @@ public class Gyro extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-    SmartDashboard.putBoolean("Using Pigeon", m_usePigeon);
-  }
+  public void periodic() {}
 }

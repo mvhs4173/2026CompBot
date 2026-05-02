@@ -39,8 +39,8 @@ public final class Constants {
     public static final double translationLimit = 4; //2.5 // for slewRateLimiters
     public static final double rotationLimit = 2.0;
 
-    public static final double normalSpeed = 3; // Meters PS
-    public static final double rotationNormalSpeed = 4.5; // Radians PS
+    public static final double normalSpeed = 1; // Meters PS  //Normally 3
+    public static final double rotationNormalSpeed = 2; // Radians PS  //Normally 4.5
 
     public static final double kTolerance = 0.15;
   }
@@ -130,7 +130,7 @@ public final class Constants {
     public static final int kRetractedLimitSwitchPort = 0;
 
     // PID values
-    public static final double kDeployP = 75;
+    public static final double kDeployP = 30; // 75 for comp
     public static final double kDeployI = 2;
     public static final double kDeployD = 5;
 
@@ -163,6 +163,8 @@ public final class Constants {
 
     public static final boolean kLeftDeployEncoderInverted = false;
     public static final boolean kRightDeployEncoderInverted = false;
+
+    public static final double kDeploymentDifferenceToleranceMeters = 0.02; //Difference in the lead screw deployments that will result in stopping the farther one
   }
 
   public static class IndexerConstants {

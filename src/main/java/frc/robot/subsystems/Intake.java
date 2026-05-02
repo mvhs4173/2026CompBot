@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Volts;
-
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
@@ -14,6 +12,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.util.Units;
@@ -49,7 +48,7 @@ public class Intake extends SubsystemBase {
   private SparkMaxConfig m_leftDeployConfig = new SparkMaxConfig();
   private SparkMaxConfig m_rightDeployConfig = new SparkMaxConfig();
   private SparkMaxConfig m_runningConfig = new SparkMaxConfig();
-  private PIDController m_deplyDifferenceController = new PIDController(
+  private PIDController m_deployDifferenceController = new PIDController(
     75,
     0,
     0
@@ -130,7 +129,7 @@ public class Intake extends SubsystemBase {
       IntakeConstants.kDeployToleranceMeters
     );
 
-    m_deplyDifferenceController.setSetpoint(0);
+    m_deployDifferenceController.setSetpoint(0);
     SmartDashboard.putBoolean("Override Deployed", false);
     SmartDashboard.putBoolean("Override Retracted", false);
   }
@@ -226,42 +225,55 @@ public class Intake extends SubsystemBase {
     }
   }
 
+  public void applyVoltageForSetpoint(double deployDistanceMeters) {
+    double leftVolts = m_leftDeploymentPIDController.calculate(
+      getLeftDeploymentExtensionMeters(),
+      deployDistanceMeters
+    );
+    double rightVolts = m_rightDeploymentPIDController.calculate(
+      getRightDeploymentExtensionMeters(),
+      deployDistanceMeters
+    );
+
+    double deployCorrection = m_deployDifferenceController.calculate(
+      getLeftDeploymentExtensionMeters() - getRightDeploymentExtensionMeters()
+    );
+
+    double leftVoltage = leftVolts + deployCorrection;
+    double rightVoltage = rightVolts - deployCorrection;
+
+    double extensionDifference = Math.abs(getLeftDeploymentExtensionMeters() - getRightDeploymentExtensionMeters());
+
+    double leftDistanceFromSetpoint = Math.abs(getLeftDeploymentExtensionMeters() - deployDistanceMeters);
+    double rightDistanceFromSetpoint = Math.abs(getRightDeploymentExtensionMeters() - deployDistanceMeters);
+
+    if(extensionDifference > IntakeConstants.kDeploymentDifferenceToleranceMeters) {
+      //if the difference is more than the tolerance, set the farther ahead one to zero
+      if (leftDistanceFromSetpoint < rightDistanceFromSetpoint) {
+        leftVoltage = 0.0;
+        System.out.println("Stopping Left");
+      } else {
+        rightVoltage = 0.0;
+        System.out.println("Stopping Right");
+      }
+    }
+
+    m_leftDeployMotor.setVoltage(leftVoltage);
+    m_rightDeployMotor.setVoltage(rightVoltage);
+  }
+
   /**
    * Calculates PID for both motors with a setpoint of IntakeConstants.kDeployDistanceMeters and sets the voltage of the motors
    */
   private void deploy() {
-    double leftVolts = m_leftDeploymentPIDController.calculate(
-      getLeftDeploymentExtensionMeters(),
-      IntakeConstants.kDeployDistanceMeters
-    );
-    double rightVolts = m_rightDeploymentPIDController.calculate(
-      getRightDeploymentExtensionMeters(),
-      IntakeConstants.kDeployDistanceMeters
-    );
-
-    double deployCorrection = m_deplyDifferenceController.calculate(
-      getLeftDeploymentExtensionMeters() - getRightDeploymentExtensionMeters()
-    );
-
-    m_leftDeployMotor.setVoltage(leftVolts + deployCorrection);
-    m_rightDeployMotor.setVoltage(rightVolts - deployCorrection);
+    applyVoltageForSetpoint(IntakeConstants.kDeployDistanceMeters);
   }
 
   /**
    * Calculates PID for both motors with a setpoint of 0 meters and sets the voltage of the motors
    */
   private void retract() {
-    double leftVolts = m_leftDeploymentPIDController.calculate(
-      getLeftDeploymentExtensionMeters(),
-      0.0
-    );
-    double rightVolts = m_rightDeploymentPIDController.calculate(
-      getRightDeploymentExtensionMeters(),
-      0.0
-    );
-
-    m_leftDeployMotor.setVoltage(leftVolts);
-    m_rightDeployMotor.setVoltage(rightVolts);
+    applyVoltageForSetpoint(0.0);
   }
 
   /**

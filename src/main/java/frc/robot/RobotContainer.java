@@ -32,10 +32,10 @@ import frc.robot.subsystems.DriveBase;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
-import java.io.File;
-import java.nio.file.FileSystem;
-import java.nio.file.Path;
-import java.util.function.BooleanSupplier;
+// import java.io.File;
+// import java.nio.file.FileSystem;
+// import java.nio.file.Path;
+// import java.util.function.BooleanSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -44,11 +44,11 @@ import java.util.function.BooleanSupplier;
  * the {@link Robot}
  * periodic methods (other than the scheduler calls). Instead, the structure of
  * the robot (including
- * subsystems, commands, and trigger mappings) should be declared here.
+ *, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
 
-  // The robot's subsystems and commands are defined here...
+  // The robot's and commands are defined here...
   private final DriveBase m_driveBase = new DriveBase();
   private final Intake m_intake = new Intake();
   private final Indexer m_indexer = new Indexer();
@@ -70,7 +70,7 @@ public class RobotContainer {
   //CommandXboxController m_operatorController = m_driverController;
 
   /**
-   * The container for the robot. Contains subsystems, OI devices, and commands.
+   * The container for the robot. Contains, OI devices, and commands.
    */
   public RobotContainer() {
     SmartDashboard.putNumber("Angle Override Deg", angleOverrideDegrees);
