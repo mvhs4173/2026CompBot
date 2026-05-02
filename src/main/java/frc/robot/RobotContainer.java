@@ -62,8 +62,8 @@ public class RobotContainer {
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
     new CommandXboxController(OperatorConstants.kDriverControllerPort);
-  private final CommandXboxController m_operatorController =
-    new CommandXboxController(OperatorConstants.kOperatorControllerPort);
+  // private final CommandXboxController m_operatorController =
+  //   new CommandXboxController(OperatorConstants.kOperatorControllerPort);
 
   double angleOverrideDegrees = 0;
 
@@ -91,7 +91,7 @@ public class RobotContainer {
             m_driverController.getLeftX(),
             m_driverController.getRightX(),
             !m_driverController.leftBumper().getAsBoolean(),
-            m_driverController.rightTrigger().getAsBoolean()
+            m_driverController.leftTrigger().getAsBoolean()
           );
         },
         m_driveBase
@@ -187,6 +187,8 @@ public class RobotContainer {
       .y()
       .onTrue(new InstantCommand(m_driveBase::resetGyro, m_driveBase));
 
+    
+
     // m_driverController
     //   .rightBumper()
     //   .whileTrue(
@@ -200,10 +202,10 @@ public class RobotContainer {
     //Operator
 
     // Toggle deployed
-    m_operatorController.x().onTrue(new InstantCommand(m_intake::toggleDeploy));
+     m_driverController.x().onTrue(new InstantCommand(m_intake::toggleDeploy));
 
     // Run the Intake
-    m_operatorController
+    m_driverController
       .a()
       .whileTrue(
         new RunCommand(m_intake::runIntake, m_intake).finallyDo(
@@ -212,7 +214,7 @@ public class RobotContainer {
       );
 
     //Flush - Reverse intake, indexer, and shooter
-    m_operatorController
+    m_driverController
       .rightBumper()
       .whileTrue(
         new ParallelCommandGroup(
@@ -229,49 +231,49 @@ public class RobotContainer {
       );
 
     //Adjust hood
-    m_operatorController
+    m_driverController
       .povUp()
       // .onTrue(m_shooter.getSetHoodCommand(Constants.ShooterConstants.kHoodMaximumAngle));
       //.whileTrue(new RunCommand(m_shooter::raiseHood, m_shooter));
       .onTrue(m_shooter.getSetHoodPercentCommand(0.32));
 
-    m_operatorController
+    m_driverController
       .povLeft()
       .onTrue(m_shooter.getSetHoodPercentCommand(0.66));
 
-    m_operatorController
+    m_driverController
       .povRight()
       .onTrue(m_shooter.getSetHoodPercentCommand(0.48));
 
-    m_operatorController
+    m_driverController
       .povDown()
       .whileTrue(new RunCommand(m_shooter::lowerHood, m_shooter));
 
-    m_operatorController
+   /*  m_driverController
       .b()
       .onTrue(
         m_shooter.getSetHoodPercentCommand(
           Constants.ShooterConstants.kHoodPercent
         )
-      );
+      );*/
 
     //Index in
-    m_operatorController
-      .leftBumper()
+     m_driverController
+      .b()
       .whileTrue(m_indexer.getIndexCommand())
       .onFalse(m_indexer.getStopCommand());
 
-    m_operatorController
+  /*   m_driverController
       .y()
       .whileTrue(
         new RunCommand(
-          () -> m_shooter.shooterSpeedControl(m_operatorController::getLeftY),
+          () -> m_shooter.shooterSpeedControl(m_driverController::getLeftY),
           m_shooter
         )
-      );
+      );*/
 
     //Shoot
-    m_operatorController
+    m_driverController
       .rightTrigger()
       .whileTrue(
         new SequentialCommandGroup(
@@ -283,7 +285,7 @@ public class RobotContainer {
         )
       )
       .onFalse(m_indexer.getStopCommand());
-    m_operatorController
+   /*  m_driverController
       .leftTrigger()
       .whileTrue(
         new ParallelCommandGroup(
@@ -293,7 +295,7 @@ public class RobotContainer {
           )
         )
       )
-      .onFalse(m_indexer.getStopCommand());
+      .onFalse(m_indexer.getStopCommand());*/
   }
 
   /**
